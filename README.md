@@ -2,6 +2,7 @@ README
 ======
 
 Minimal Spring Boot based RESTful 'Hello World' example, including Swagger (using Springfox) and Docker
+(Also see https://spring.io/guides/gs/rest-service/)
 
 Requirements
 ------------
