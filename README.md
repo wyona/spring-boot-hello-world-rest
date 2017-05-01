@@ -19,3 +19,15 @@ Browser
 -------
 
 http://127.0.0.1:8080/hello-world-webapp-1.0.0-SNAPSHOT/
+
+Docker
+------
+
+* Build webapp as jar file (see pom.xml)
+* Start Docker
+* Build image: docker build -t spring-boot-hello-world .
+* Show images: docker images
+* Run image: docker run -p 8080:8080 spring-boot-hello-world
+* Show docker processes: docker ps
+* Stop specific docker process: docker stop a83f2938b6ae
+* Request in browser: http://127.0.0.1:8080/swagger-ui.html
