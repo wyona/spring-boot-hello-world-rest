@@ -31,5 +31,5 @@ Docker
 ** Remove image: docker rmi -f IMAGE ID
 * Run image: docker run -p 8080:8080 spring-boot-hello-world
 * Show docker processes: docker ps
-* Stop specific docker process: docker stop a83f2938b6ae
+* Stop specific docker process: docker stop CONTAINER ID
 * Request in browser: http://127.0.0.1:8080/swagger-ui.html
