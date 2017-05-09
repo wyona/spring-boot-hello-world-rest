@@ -12,7 +12,7 @@
     </parent>
 
     <packaging>war</packaging>
-<!--
+<!-- INFO: Set when you want to use docker
     <packaging>jar</packaging>
 -->
 
@@ -47,4 +47,22 @@
     <properties>
       <java.version>1.8</java.version>
     </properties>
+
+<build>
+    <plugins>
+      <!-- INFO: Needed to change jar file, in order to work inside docker -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <!-- Add build info to actuator /info endpoint -->
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+</build>
 </project>
