@@ -28,6 +28,7 @@ Docker
 * Start Docker
 * Build image: docker build -t spring-boot-hello-world .
 * Show images: docker images
+** Remove image: docker rmi -f IMAGE ID
 * Run image: docker run -p 8080:8080 spring-boot-hello-world
 * Show docker processes: docker ps
 * Stop specific docker process: docker stop a83f2938b6ae
