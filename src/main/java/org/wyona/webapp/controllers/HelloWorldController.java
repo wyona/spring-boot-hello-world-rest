@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.wyona.webapp.models.Greeting;
 
 /**
- *
+ * 'Hello World' Controller 
  */
 @RestController
 @RequestMapping(value = "/api/greeting") 
