@@ -33,3 +33,8 @@ Docker
 * Show docker processes: docker ps
 * Stop specific docker process: docker stop CONTAINER ID
 * Request in browser: http://127.0.0.1:8080/swagger-ui.html
+
+Specification and Testing
+-------------------------
+
+https://www.yulup.com/en/projects/fe937e1d-3bb4-4012-a963-04848bd955ba/index.html
