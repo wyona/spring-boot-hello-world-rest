@@ -25,7 +25,7 @@ public class HelloWorldController {
     private static final Logger logger = LogManager.getLogger("HelloWorldController");
 
     /**
-     *
+     * Send greetings by email
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Generate greeting and send greeting as email when address specified") 
