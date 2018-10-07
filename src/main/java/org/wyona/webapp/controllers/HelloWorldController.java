@@ -33,6 +33,7 @@ public class HelloWorldController {
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
         ) {
         logger.info(new Greeting().getGreeting());
+        // TODO: Send email
         return new ResponseEntity<>(new Greeting(), HttpStatus.OK);
     }
 }
