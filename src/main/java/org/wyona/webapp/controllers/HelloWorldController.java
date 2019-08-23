@@ -48,12 +48,14 @@ public class HelloWorldController {
     public ResponseEntity<Greeting> getGreeting(
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
-        logger.info(new Greeting().getGreeting());
+
+        Greeting greeting = new Greeting("World");
+        logger.info(greeting.getGreeting());
 
         if(email != null && !email.isEmpty()) {
-            mailerService.sendEmailGreeting(email, "Hello World!", "Hello World!");
+            mailerService.sendEmailGreeting(email, greeting.getGreeting(), greeting.getGreeting());
         }
 
-        return new ResponseEntity<>(new Greeting(), HttpStatus.OK);
+        return new ResponseEntity<>(greeting, HttpStatus.OK);
     }
 }
