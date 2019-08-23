@@ -20,10 +20,14 @@ public class EmailSender {
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", true);
-        props.put("mail.smtp.starttls.enable", true);
+
+        // TODO: Seems to cause trouble, when the mail server uses a self-signed certificate
+        //props.put("mail.smtp.starttls.enable", true);
+
         props.put("mail.smtp.host", config.getHost());
         props.put("mail.smtp.port", config.getPort());
 
+        // TODO: Make from address configurable
         fromEmail = "greetings@" + config.getHost();
 
         session = Session.getInstance(
@@ -36,6 +40,9 @@ public class EmailSender {
         );
     }
 
+    /**
+     * Send greetings by email
+     */
     public void sendEmailGreeting(String email, String subject, String text) throws MessagingException {
         Message message = new SMTPMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
