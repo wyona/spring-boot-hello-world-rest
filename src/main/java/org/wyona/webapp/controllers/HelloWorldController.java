@@ -49,6 +49,7 @@ public class HelloWorldController {
     })
     public ResponseEntity<Greeting> getGreeting(
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
+        // TODO: Use @javax.validation.constraints.Email to validate email address 
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
 
