@@ -8,6 +8,13 @@ public class Email implements Serializable {
     private String subject;
     private String text;
 
+    // INFO: Default constructor is necessary, because otherwise a 400 is generated when using @RequestBody (see https://stackoverflow.com/questions/27006158/error-400-spring-json-requestbody-when-doing-post)
+    public Email() {
+    }
+
+    /**
+     *
+     */
     public Email(String email, String subject, String text) {
         this.email = email;
         this.subject = subject;
