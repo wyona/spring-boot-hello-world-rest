@@ -15,8 +15,8 @@ Requirements
 Build and deploy
 ----------------
 
-Configure mail server inside src/main/resources/application.properties
-sh build.sh
+* Configure mail server inside src/main/resources/application.properties
+* sh build.sh
 
 Browser
 -------
