@@ -49,6 +49,7 @@ public class HelloWorldController {
     })
     public ResponseEntity<Greeting> getGreeting(
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
+        //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
 
         Greeting greeting = new Greeting("World");
@@ -69,23 +70,17 @@ public class HelloWorldController {
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
     })
-    public ResponseEntity<Email> sendEmail(@ApiParam(name = "e-mail", value = "e-mail address to be sent to", required = true)
-                                              @RequestParam(name = "e-mail") String email,
-                                           @ApiParam(name = "subject", value = "subject to be sent to")
-                                              @RequestParam(name = "subject") String subject,
-                                           @ApiParam(name = "text", value = "text to be sent to")
-                                              @RequestParam(name = "text") String text) throws MessagingException {
+    public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email) throws MessagingException {
 
-        Boolean emailValid = emailValidation.isEmailValid(email);
+        Boolean emailValid = emailValidation.isEmailValid(email.getEmail());
         if (!emailValid) {
             throw new IllegalArgumentException("Provided email is not valid");
         }
-        String automatedSubject = emailValidation.isSubjectEmpty(subject);
-        String automatedText = emailValidation.isTextEmpty(text);
+        String automatedSubject = emailValidation.isSubjectEmpty(email.getSubject());
+        String automatedText = emailValidation.isTextEmpty(email.getText());
 
-        Email object = new Email(email, automatedSubject, automatedText);
-        mailerService.sendEmailToUser(object);
+        mailerService.sendEmailToUser(email);
 
-        return new ResponseEntity<>(object, HttpStatus.OK);
+        return new ResponseEntity<>(email, HttpStatus.OK);
     }
 }
