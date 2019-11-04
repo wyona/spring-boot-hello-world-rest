@@ -96,7 +96,7 @@ public class HelloWorldController {
 
         LanguageEmail.Language language = LanguageEmail.Language.getLanguageByCode(request.getLanguageCode());
         if (language == null) {
-            throw new IllegalArgumentException("Language not supported yet!");
+            throw new IllegalArgumentException("Language '" + request.getLanguageCode() + "' not supported yet!");
         }
 
         mailerService.sendEmailGreeting(request.getEmail(), language.name(), language.getMessage());
