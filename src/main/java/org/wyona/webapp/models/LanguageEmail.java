@@ -33,7 +33,7 @@ public class LanguageEmail implements Serializable {
     }
 
     @NotBlank(message = "Email cannot be empty or null")
-    @Email(regexp = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$", message = "Email not valid")
+    @Email(regexp = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$", message = "Submitted email is not valid")
     private String email;
 
     @NotBlank(message = "Language code cannot be empty or null")
