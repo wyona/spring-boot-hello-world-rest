@@ -1,6 +1,10 @@
 package org.wyona.webapp.controllers;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -9,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+// INFO: See alternative E-Mail validation approach below using @Valid annotation
 import org.wyona.webapp.interfaces.EmailValidation;
 import org.wyona.webapp.models.Email;
 import org.wyona.webapp.models.Greeting;
@@ -16,10 +21,9 @@ import org.wyona.webapp.models.LanguageEmail;
 import org.wyona.webapp.services.MailerService;
 
 import javax.mail.MessagingException;
+
+// INFO: Validator implementation provided by 'hibernate-validator' (see pom file)
 import javax.validation.Valid;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 
 /**
  * 'Hello World' Controller 
@@ -86,13 +90,16 @@ public class HelloWorldController {
         return new ResponseEntity<>(email, HttpStatus.OK);
     }
 
+    /**
+     * Send greetings by email for a specific language
+     */
     @PostMapping("/send/lang")
     @ApiOperation(value = "Send an e-mail with greeting on specific language")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request"),
             @ApiResponse(code = 200, response = String.class, message = "Email sent")
     })
-    public ResponseEntity<String> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request) throws MessagingException {
+    public ResponseEntity<LanguageEmail.Language> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request) throws MessagingException {
 
         LanguageEmail.Language language = LanguageEmail.Language.getLanguageByCode(request.getLanguageCode());
         if (language == null) {
@@ -100,6 +107,6 @@ public class HelloWorldController {
         }
 
         mailerService.sendEmailGreeting(request.getEmail(), language.name(), language.getMessage());
-        return new ResponseEntity<>("hey", HttpStatus.OK);
+        return new ResponseEntity<>(language, HttpStatus.OK);
     }
 }
