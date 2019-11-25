@@ -31,6 +31,9 @@ public class MailerService {
         logger.info("Email greeting sent to {}", email);
     }
 
+    /**
+     * @param object Email object, containing email address, subject and body text
+     */
     public void sendEmailToUser(Email object) throws MessagingException {
         emailSender.sendEmailGreeting(object.getEmail(), object.getSubject(), object.getText());
         logger.info("Email sent to {}", object.getEmail());
