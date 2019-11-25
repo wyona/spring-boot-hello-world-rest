@@ -1,5 +1,8 @@
 package org.wyona.webapp.exceptions;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,8 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final Logger logger = LogManager.getLogger("RestExceptionHandler");
 
     @ExceptionHandler(SendFailedException.class)
     protected ResponseEntity<Object> handleSendFailedException(SendFailedException ex) {
@@ -42,6 +47,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                 .collect(Collectors.toList());
 
         body.put("errors", errors);
+
+        logger.error("Something went wrong: " + errors);
 
         return new ResponseEntity<>(body, headers, status);
 
