@@ -20,6 +20,12 @@ public class MailerService {
         this.emailSender = emailSender;
     }
 
+    /**
+     * Send email greeting
+     * @param email Email address
+     * @param subject Email subject
+     * @param text Email body text
+     */
     public void sendEmailGreeting(String email, String subject, String text) throws MessagingException {
         emailSender.sendEmailGreeting(email, subject, text);
         logger.info("Email greeting sent to {}", email);
