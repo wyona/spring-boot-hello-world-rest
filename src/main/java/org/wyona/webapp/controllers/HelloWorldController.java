@@ -72,7 +72,7 @@ public class HelloWorldController {
      * Send greetings by email, whereas subject and body text can be set
      */
     @PostMapping("/send")
-    @ApiOperation(value = "Send an e-mail with provided text, subject to email address which is specified")
+    @ApiOperation(value = "Send an email with provided text and subject to email address which is specified")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
     })
@@ -94,7 +94,7 @@ public class HelloWorldController {
      * Send greetings by email for a specific language
      */
     @PostMapping("/send/lang")
-    @ApiOperation(value = "Send an e-mail with greeting on specific language")
+    @ApiOperation(value = "Send a language specific greeting to a provided email address")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request"),
             @ApiResponse(code = 200, response = String.class, message = "Email sent")
@@ -106,7 +106,7 @@ public class HelloWorldController {
             throw new IllegalArgumentException("Language '" + request.getLanguageCode() + "' not supported yet!");
         }
 
-        mailerService.sendEmailGreeting(request.getEmail(), language.name(), language.getMessage());
+        mailerService.sendEmailGreeting(request.getEmail(), "Greeting in " + language.name(), language.getMessage());
         return new ResponseEntity<>(language, HttpStatus.OK);
     }
 }
