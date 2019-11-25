@@ -2,8 +2,10 @@ package org.wyona.webapp.services;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import org.wyona.webapp.mail.EmailSender;
 import org.wyona.webapp.models.Email;
 
