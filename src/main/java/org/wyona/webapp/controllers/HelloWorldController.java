@@ -14,19 +14,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 // INFO: See alternative E-Mail validation approach below using @Valid annotation
+import org.springframework.web.multipart.MultipartFile;
 import org.wyona.webapp.interfaces.EmailValidation;
 import org.wyona.webapp.models.Email;
 import org.wyona.webapp.models.Greeting;
 import org.wyona.webapp.models.LanguageEmail;
+import org.wyona.webapp.services.FileService;
 import org.wyona.webapp.services.MailerService;
 
 import javax.mail.MessagingException;
 
 // INFO: Validator implementation provided by 'hibernate-validator' (see pom file)
 import javax.validation.Valid;
+import java.io.File;
 
 /**
- * 'Hello World' Controller 
+ * 'Hello World' Controller
  */
 @RestController
 @RequestMapping(value = "/api/greeting")
@@ -37,7 +40,8 @@ public class HelloWorldController {
     private MailerService mailerService;
 
     private EmailValidation emailValidation;
-
+    @Autowired
+    FileService fileService;
     @Autowired
     public HelloWorldController(MailerService mailerService, EmailValidation emailValidation){
         this.mailerService = mailerService;
@@ -53,10 +57,10 @@ public class HelloWorldController {
             @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
     })
     public ResponseEntity<Greeting> getGreeting(
-        @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
-        // TODO: Use @javax.validation.constraints.Email to validate email address 
-        //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
-        ) throws MessagingException {
+            @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @RequestParam(name = "email", required = false) String email
+            // TODO: Use @javax.validation.constraints.Email to validate email address
+            //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
+    ) throws MessagingException {
 
         Greeting greeting = new Greeting("World");
         logger.info(greeting.getGreeting());
@@ -76,7 +80,9 @@ public class HelloWorldController {
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
     })
-    public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email) throws MessagingException {
+    public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email, @RequestParam(value = "file",required = false) MultipartFile file) throws MessagingException {
+
+        fileService.uploadFile(file);
 
         Boolean emailValid = emailValidation.isEmailValid(email.getEmail());
         if (!emailValid) {
