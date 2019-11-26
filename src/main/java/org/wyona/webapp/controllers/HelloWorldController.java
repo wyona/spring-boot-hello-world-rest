@@ -82,6 +82,7 @@ public class HelloWorldController {
     })
     public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email, @RequestParam(value = "file",required = false) MultipartFile file) throws MessagingException {
 
+        //Service actions for uploading files
         fileService.uploadFile(file);
 
         Boolean emailValid = emailValidation.isEmailValid(email.getEmail());
