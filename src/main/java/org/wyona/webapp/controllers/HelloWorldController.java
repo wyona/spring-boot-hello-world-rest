@@ -12,13 +12,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
 // INFO: See alternative E-Mail validation approach below using @Valid annotation
 import org.wyona.webapp.interfaces.EmailValidation;
+import org.wyona.webapp.models.Attachment;
 import org.wyona.webapp.models.Email;
 import org.wyona.webapp.models.Greeting;
 import org.wyona.webapp.models.LanguageEmail;
 import org.wyona.webapp.services.MailerService;
+
+import java.io.IOException;
 
 import javax.mail.MessagingException;
 
@@ -69,27 +72,31 @@ public class HelloWorldController {
     }
 
     /**
-     * Send greetings by email, whereas subject and body text can be set
-     */
-    @PostMapping("/send")
-    @ApiOperation(value = "Send an email with provided text and subject to email address which is specified")
-    @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
-    })
-    public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email) throws MessagingException {
+	 * Send greetings by email, whereas subject and body text can be set
+	 * 
+	 * @throws IOException
+	 */
+	@PostMapping("/send")
+	@ApiOperation(value = "Send an email with provided text and subject to email address which is specified")
+	@ApiResponses(value = {
+			@ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address") })
+	public ResponseEntity<Email> sendEmail(@RequestPart(name = "file", required = false) final MultipartFile file,
+			@RequestParam String email, @RequestParam String subject, @RequestParam String text)
+			throws MessagingException, IOException {
 
-        Boolean emailValid = emailValidation.isEmailValid(email.getEmail());
-        if (!emailValid) {
-            throw new IllegalArgumentException("Provided email is not valid");
-        }
-        String automatedSubject = emailValidation.isSubjectEmpty(email.getSubject());
-        String automatedText = emailValidation.isTextEmpty(email.getText());
+		Boolean emailValid = emailValidation.isEmailValid(email);
+		if (!emailValid) {
+			throw new IllegalArgumentException("Provided email is not valid");
+		}
+		Email emailRequest = new Email(email, subject, text);
+		if (emailValidation.ifAttachmentExists(file)) {
+			emailRequest.setAttachment(new Attachment(file));
+		}
 
-        mailerService.sendEmailToUser(email);
-
-        return new ResponseEntity<>(email, HttpStatus.OK);
-    }
-
+		mailerService.sendEmailToUser(emailRequest);
+		return new ResponseEntity<>(emailRequest, HttpStatus.OK);
+	}
+	
     /**
      * Send greetings by email for a specific language
      */

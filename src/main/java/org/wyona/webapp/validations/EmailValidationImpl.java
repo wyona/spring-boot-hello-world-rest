@@ -2,6 +2,7 @@ package org.wyona.webapp.validations;
 
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.wyona.webapp.interfaces.EmailValidation;
 
 @Service
@@ -28,4 +29,12 @@ public class EmailValidationImpl implements EmailValidation {
         }
         return text;
     }
+    
+    @Override
+	public Boolean ifAttachmentExists(MultipartFile file) {
+		if (file != null && !file.isEmpty()) {
+			return true;
+		}
+		return false;
+	}
 }
