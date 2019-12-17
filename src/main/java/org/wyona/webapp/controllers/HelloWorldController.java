@@ -5,9 +5,6 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +28,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(value = "/api/greeting")
 public class HelloWorldController {
-
-    private static final Logger logger = LogManager.getLogger("HelloWorldController");
 
     private MailerService mailerService;
 
@@ -58,14 +53,8 @@ public class HelloWorldController {
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
 
-        Greeting greeting = new Greeting("World");
-        logger.info(greeting.getGreeting());
-
-        if(email != null && !email.isEmpty()) {
-            mailerService.sendEmailGreeting(email, greeting.getGreeting(), greeting.getGreeting());
-        }
-
-        return new ResponseEntity<>(greeting, HttpStatus.OK);
+        // Calling the overloaded method with default values encapsulated in the service class
+        return new ResponseEntity<>(mailerService.sendEmail(email), HttpStatus.OK);
     }
 
     /**
@@ -78,14 +67,13 @@ public class HelloWorldController {
     })
     public ResponseEntity<Email> sendEmail(@ApiParam(name = "email", value = "e-mail to be sent to", required = true) @RequestBody Email email) throws MessagingException {
 
-        Boolean emailValid = emailValidation.isEmailValid(email.getEmail());
-        if (!emailValid) {
-            throw new IllegalArgumentException("Provided email is not valid");
-        }
-        String automatedSubject = emailValidation.isSubjectEmpty(email.getSubject());
-        String automatedText = emailValidation.isTextEmpty(email.getText());
+        //removed email recipient validation, since it is done in mailerService.sendEmail for all clients
 
-        mailerService.sendEmailToUser(email);
+        //automated subject and text values were not used.
+        email.setSubject(emailValidation.getDefaultSubjectIfSubjectEmpty(email.getSubject()));
+        email.setText(emailValidation.getDefaultTextIfTextEmpty(email.getText()));
+
+        mailerService.sendEmail(email);
 
         return new ResponseEntity<>(email, HttpStatus.OK);
     }
@@ -102,11 +90,8 @@ public class HelloWorldController {
     public ResponseEntity<LanguageEmail.Language> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request) throws MessagingException {
 
         LanguageEmail.Language language = LanguageEmail.Language.getLanguageByCode(request.getLanguageCode());
-        if (language == null) {
-            throw new IllegalArgumentException("Language '" + request.getLanguageCode() + "' not supported yet!");
-        }
 
-        mailerService.sendEmailGreeting(request.getEmail(), "Greeting in " + language.name(), language.getMessage());
+        mailerService.sendEmail(request.getEmail(), "Greeting in " + language.name(), language.getMessage());
         return new ResponseEntity<>(language, HttpStatus.OK);
     }
 }

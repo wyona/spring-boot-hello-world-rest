@@ -1,5 +1,7 @@
 package org.wyona.webapp.models;
 
+import org.wyona.webapp.interfaces.EmailValidation;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
@@ -25,15 +27,18 @@ public class LanguageEmail implements Serializable {
                 if (l.languageCode.equals(languageCode))
                     return l;
             }
-            return null;
+
+            // avoid returning null and then checking in caller whether the returned value is null. Try to localize the logic.
+            throw new IllegalArgumentException("Language '" + languageCode + "' not supported yet!");
         }
+
         public String getMessage() {
             return this.message;
         }
     }
 
     @NotBlank(message = "Email cannot be empty or null")
-    @Email(regexp = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$", message = "Submitted email is not valid")
+    @Email(regexp = EmailValidation.EMAIL_VALIDATION_REGEX, message = "Submitted email is not valid")
     private String email;
 
     @NotBlank(message = "Language code cannot be empty or null")
