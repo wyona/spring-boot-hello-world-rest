@@ -46,12 +46,12 @@ public class MailerService {
     }
 
     /**
-     * @param object Email object, containing email address, subject and body text
+     * @param email Email object, containing email address, subject and body text
      */
-    public void sendEmail(Email object) throws MessagingException {
-        emailSender.sendEmailGreeting(object.getEmail(), object.getSubject(), object.getText());
+    public void sendEmail(Email email) throws MessagingException {
+        emailSender.sendEmailGreeting(email.getEmail(), email.getSubject(), email.getText(), email.getAttachment());
 
         // Consider using AOP to log around methods (log method name, input parameters, return values, exceptions, etc.). This would move the logging logic to one place, and configuring pointcuts would allow the logger to be configurable.
-        logger.info("Email sent to {}", object.getEmail());
+        logger.info("Email sent to {}", email.getEmail());
     }
 }
