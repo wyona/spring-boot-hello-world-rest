@@ -1,0 +1,100 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: API description in Markdown.
+  version: 1.0.0
+  contact:
+    name: Benjamin
+    email: benjamin.dedic@hotmail.com
+paths:
+  /api/send:
+    post:
+      summary: send Email with or without attachments
+      requestBody:
+        content: 
+          multipart/form-data: 
+            schema:           
+              type: object
+              required: 
+                - email
+              properties:     
+                email: 
+                  type: string
+                subject:  
+                  type: string
+                text:  
+                  type: string
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: "Successfully sent an email with attachment"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailResponse'
+        '400':
+          description: "Bad request"
+          
+  /api/send/lang:
+    post:
+      summary: Send a language specific greeting to a provided email address attachments
+      requestBody:
+        description: Send email body
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LanguageEmail'
+      responses:
+        '200':
+          description: "Email sent"
+        '400':
+          description: "Bad request"  
+          
+  /api/send/greeting:
+    get:
+      description: Generate greeting and send greeting as email when address specified"
+
+      responses:
+        '200':
+          description: "Email sent"
+        '400':
+          description: "Bad Request, e.g. provided email parameter is not valid email address"         
+  
+components:
+  schemas:
+    LanguageEmail:
+      type: object
+      required: 
+        - email
+        - languageCode
+      properties:
+        email:
+          type: string
+        languageCode:
+          type: string
+  
+    EmailResponse:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          description: 'example@gmail.com'
+        subject:
+          type: string
+          description: 'Subject of the email'
+        text:
+          type: string
+          description: 'Body of an email'
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+          
