@@ -60,7 +60,7 @@ public class HelloWorldController {
      * Send greetings by email, whereas subject and body text can be set
      */
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Send an email with provided text and subject to email address which is specified")
+    @ApiOperation(value = "Send an email with provided text and subject (and optional attachment) to email address which is specified")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
     })
