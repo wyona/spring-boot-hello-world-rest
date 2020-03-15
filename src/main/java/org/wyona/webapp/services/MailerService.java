@@ -12,11 +12,11 @@ import org.wyona.webapp.models.Greeting;
 
 import javax.mail.MessagingException;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class MailerService {
-    private static final Logger logger = LogManager.getLogger("MailerService");
-    private static final String DEFAULT_GREETING = "World";
-
     private final EmailSender emailSender;
 
     @Autowired
@@ -24,15 +24,14 @@ public class MailerService {
         this.emailSender = emailSender;
     }
 
-    // Overloading the method with instantiating the default Greeting in the service class instead of the controller.
-    // Service classes are easier to unit test, and overloading the method makes the code cleaner and easier to follow and test,
-    // removing the code duplication in the process.
-    public Greeting sendEmail(String recipient) throws MessagingException {
-        Greeting defaultGreeting = new Greeting(DEFAULT_GREETING);
+    /**
+     * @param recipient E-Mail address of recipient
+     * @param greeting Greeting which will be sent to recipient
+     */
+    public Greeting sendEmail(String recipient, Greeting greeting) throws MessagingException {
+        sendEmail(new Email(recipient, greeting.getGreeting(), greeting.getGreeting()));
 
-        sendEmail(new Email(recipient, defaultGreeting.getGreeting(), defaultGreeting.getGreeting()));
-
-        return defaultGreeting;
+        return greeting;
     }
 
     /**
@@ -51,7 +50,6 @@ public class MailerService {
     public void sendEmail(Email email) throws MessagingException {
         emailSender.sendEmailGreeting(email.getEmail(), email.getSubject(), email.getText(), email.getAttachment());
 
-        // Consider using AOP to log around methods (log method name, input parameters, return values, exceptions, etc.). This would move the logging logic to one place, and configuring pointcuts would allow the logger to be configurable.
-        logger.info("Email sent to {}", email.getEmail());
+        log.info("Email sent to {}", email.getEmail());
     }
 }

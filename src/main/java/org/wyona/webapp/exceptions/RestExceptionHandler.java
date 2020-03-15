@@ -23,10 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
-
-    private static final Logger logger = LogManager.getLogger("RestExceptionHandler");
 
     @Value("${spring.http.multipart.max-file-size}")
     private String maxFileSize;

@@ -18,12 +18,15 @@ import org.wyona.webapp.services.MailerService;
 
 import javax.mail.MessagingException;
 
+import lombok.extern.slf4j.Slf4j;
+
 // INFO: Validator implementation provided by 'hibernate-validator' (see pom file)
 import javax.validation.Valid;
 
 /**
  * 'Hello World' Controller 
  */
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/greeting")
 public class HelloWorldController {
@@ -52,8 +55,8 @@ public class HelloWorldController {
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
 
-        // Calling the overloaded method with default values encapsulated in the service class
-        return new ResponseEntity<>(mailerService.sendEmail(email), HttpStatus.OK);
+        log.info("Send greeting to '" + email + "'...");
+        return new ResponseEntity<>(mailerService.sendEmail(email, new Greeting("World")), HttpStatus.OK);
     }
 
     /**
