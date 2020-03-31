@@ -17,12 +17,16 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Component
 public class EmailSender {
 
     private final Session session;
-    private final String fromEmail;
     private final EmailValidation emailValidation;
+
+    @Value("${from.email.address}")
+    private String fromEmail;
 
     @Autowired
     public EmailSender(EmailSenderCofig config, EmailValidation emailValidation){
@@ -37,9 +41,6 @@ public class EmailSender {
 
         props.put("mail.smtp.host", config.getHost());
         props.put("mail.smtp.port", config.getPort());
-
-        // TODO: Make from address configurable
-        fromEmail = "greetings@" + config.getHost();
 
         session = Session.getInstance(
                 props,
