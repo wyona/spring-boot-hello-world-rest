@@ -80,6 +80,23 @@
             <artifactId>log4j-core</artifactId>
             <version>2.11.0</version>
         </dependency>
+
+
+        <!-- Lombok features -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Freemarker -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
+            <version>1.5.6.RELEASE</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
