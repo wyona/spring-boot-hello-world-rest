@@ -2,6 +2,7 @@ package org.wyona.webapp.controllers;
 
 import io.swagger.annotations.*;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,6 +15,7 @@ import org.wyona.webapp.interfaces.EmailValidation;
 import org.wyona.webapp.models.Email;
 import org.wyona.webapp.models.Greeting;
 import org.wyona.webapp.models.LanguageEmail;
+import org.wyona.webapp.services.GreetingService;
 import org.wyona.webapp.services.MailerService;
 
 import javax.mail.MessagingException;
@@ -29,17 +31,11 @@ import javax.validation.Valid;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/greeting")
+@AllArgsConstructor
 public class HelloWorldController {
-
     private MailerService mailerService;
-
     private EmailValidation emailValidation;
-
-    @Autowired
-    public HelloWorldController(MailerService mailerService, EmailValidation emailValidation){
-        this.mailerService = mailerService;
-        this.emailValidation = emailValidation;
-    }
+    private GreetingService greetingService;
 
     /**
      * Send greetings by email
@@ -75,7 +71,9 @@ public class HelloWorldController {
                                            @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
                                            @ApiParam(name = "emailText", value = "e-mail text") @RequestPart(required = false)  String emailText,
                                            @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
-        Email email = new Email(emailAddress, emailSubject, emailText).attachment(emailAttachment);
+
+        // TODO: Check whether format of emailText is HTML
+        Email email = new Email(emailAddress, emailSubject, emailText, false).attachment(emailAttachment);
         //removed email recipient validation, since it is done in mailerService.sendEmail for all clients
 
         //automated subject and text values were not used.
@@ -96,11 +94,12 @@ public class HelloWorldController {
             @ApiResponse(code = 400, message = "Bad Request"),
             @ApiResponse(code = 200, response = String.class, message = "Email sent")
     })
-    public ResponseEntity<LanguageEmail.Language> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request) throws MessagingException {
-
-        LanguageEmail.Language language = LanguageEmail.Language.getLanguageByCode(request.getLanguageCode());
-
-        mailerService.sendEmail(request.getEmail(), "Greeting in " + language.name(), language.getMessage());
-        return new ResponseEntity<>(language, HttpStatus.OK);
+    ResponseEntity<String> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request,
+            @RequestHeader(value = "Accept-Language", defaultValue = "de") String lang,
+            @ApiParam(name = "name", value = "Name of person to be greeted, e.g. 'Michael'") @RequestParam(name = "name", required = true) String name
+            ) throws MessagingException{
+        String greetingText = greetingService.getGreetingText(lang, name);
+        mailerService.sendEmail(request.getEmail(), "Greeting in " + lang, greetingText, true);
+        return ResponseEntity.ok(greetingText);
     }
 }
