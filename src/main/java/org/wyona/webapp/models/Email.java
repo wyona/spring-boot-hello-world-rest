@@ -10,6 +10,8 @@ public class Email implements Serializable {
     private String email;
     private String subject;
     private String text;
+    private boolean isHTMLMessage;
+
     @JsonIgnore
     private MultipartFile attachment;
 
@@ -18,12 +20,13 @@ public class Email implements Serializable {
     }
 
     /**
-     *
+     * @isHTMLMessage True when format of text message is HTML and false otherwise
      */
-    public Email(String email, String subject, String text) {
+    public Email(String email, String subject, String text, boolean isHTMLMessage) {
         this.email = email;
         this.subject = subject;
         this.text = text;
+        this.isHTMLMessage = isHTMLMessage;
     }
 
     // using builder pattern to avoid overloading the constructor, or changing the existing one
@@ -56,6 +59,13 @@ public class Email implements Serializable {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    /**
+     * @return true when format of text message is HTML and false otherwise
+     */
+    public boolean isHTMLMessage() {
+        return isHTMLMessage;
     }
 
     public MultipartFile getAttachment() {
