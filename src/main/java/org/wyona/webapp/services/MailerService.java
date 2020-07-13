@@ -29,7 +29,8 @@ public class MailerService {
      * @param greeting Greeting which will be sent to recipient
      */
     public Greeting sendEmail(String recipient, Greeting greeting) throws MessagingException {
-        sendEmail(new Email(recipient, greeting.getGreeting(), greeting.getGreeting()));
+        // TODO: Check whether format of greeting body is HTML
+        sendEmail(new Email(recipient, greeting.getGreeting(), greeting.getGreeting(), false));
 
         return greeting;
     }
@@ -39,16 +40,17 @@ public class MailerService {
      * @param email Email address
      * @param subject Email subject
      * @param text Email body text
+     * @param isHTMLMessage True when text is HTML and false when text is plain
      */
-    public void sendEmail(String email, String subject, String text) throws MessagingException {
-        sendEmail(new Email(email, subject, text));
+    public void sendEmail(String email, String subject, String text, boolean isHTMLMessage) throws MessagingException {
+        sendEmail(new Email(email, subject, text, isHTMLMessage));
     }
 
     /**
      * @param email Email object, containing email address, subject and body text
      */
     public void sendEmail(Email email) throws MessagingException {
-        emailSender.sendEmailGreeting(email.getEmail(), email.getSubject(), email.getText(), email.getAttachment());
+        emailSender.sendEmailGreeting(email.getEmail(), email.getSubject(), email.getText(), email.isHTMLMessage(), email.getAttachment());
 
         log.info("Email sent to {}", email.getEmail());
     }
