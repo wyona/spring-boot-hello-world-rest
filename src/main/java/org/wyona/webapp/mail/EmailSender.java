@@ -55,10 +55,10 @@ public class EmailSender {
     /**
      * Send greetings by email
      */
-    public void sendEmailGreeting(String email, String subject, String text, MultipartFile attachment) throws MessagingException {
+    public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException {
         validateParameters(email, subject, text);
 
-        Message message = composeMessage(email, subject, text, attachment);
+        Message message = composeMessage(email, subject, text, isHTMLMessage, attachment);
 
         Transport.send(message);
     }
@@ -72,7 +72,10 @@ public class EmailSender {
         Assert.isTrue(!StringUtils.isEmpty(text), "Email content must be specified");
     }
 
-    private Message composeMessage(String email, String subject, String text, MultipartFile attachment) throws MessagingException {
+    /**
+     *
+     */
+    private Message composeMessage(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException {
         Message message = new SMTPMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
@@ -80,8 +83,13 @@ public class EmailSender {
 
         Multipart multipart = new MimeMultipart();
 
+        String mimeType = "text/plain";
+        if (isHTMLMessage) {
+            mimeType = "text/html";
+        }
         BodyPart messageText = new MimeBodyPart();
-        messageText.setText(text);
+        messageText.setContent(text, mimeType);
+
         multipart.addBodyPart(messageText);
 
         if (attachment != null) {
