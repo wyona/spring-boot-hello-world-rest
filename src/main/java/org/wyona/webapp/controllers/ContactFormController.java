@@ -58,7 +58,7 @@ public class ContactFormController {
                                            @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
                                            @ApiParam(name = "emailText", value = "e-mail message") @RequestPart(required = false)  String emailText,
                                            @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
-        Email email = new Email(contactEmail, emailSubject, "Contact request from: " + emailAddress + ", " + name + "\n\nMessage: \n\n" + emailText).attachment(emailAttachment);
+        Email email = new Email(contactEmail, emailSubject, "Contact request from: " + emailAddress + ", " + name + "\n\nMessage: \n\n" + emailText, false).attachment(emailAttachment);
 
         email.setSubject(emailValidation.getDefaultSubjectIfSubjectEmpty(email.getSubject()));
         email.setText(emailValidation.getDefaultTextIfTextEmpty(email.getText()));
