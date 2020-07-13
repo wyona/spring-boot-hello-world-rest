@@ -28,9 +28,12 @@ public class EmailSender {
     @Value("${from.email.address}")
     private String fromEmail;
 
+    private AsyncEmailSender asyncEmailSender;
+
     @Autowired
-    public EmailSender(EmailSenderCofig config, EmailValidation emailValidation){
+    public EmailSender(EmailSenderCofig config, EmailValidation emailValidation, AsyncEmailSender asyncEmailSender){
         this.emailValidation = emailValidation;
+        this.asyncEmailSender = asyncEmailSender;
 
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
@@ -60,7 +63,7 @@ public class EmailSender {
 
         Message message = composeMessage(email, subject, text, isHTMLMessage, attachment);
 
-        Transport.send(message);
+        asyncEmailSender.sendMailAsync(message);
     }
 
     private void validateParameters(String email, String subject, String text) {
