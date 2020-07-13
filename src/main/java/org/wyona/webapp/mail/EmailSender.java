@@ -1,6 +1,9 @@
 package org.wyona.webapp.mail;
 
 import com.sun.mail.smtp.SMTPMessage;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -18,26 +21,25 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 
+@Slf4j
 @Component
 public class EmailSender {
 
     private final Session session;
-    private final EmailValidation emailValidation;
 
     @Value("${from.email.address}")
     private String fromEmail;
 
     @Autowired
-    public EmailSender(EmailSenderCofig config, EmailValidation emailValidation){
-        this.emailValidation = emailValidation;
-
+    public EmailSender(EmailSenderCofig config) {
         Properties props = new Properties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", true);
 
         // TODO: Seems to cause trouble, when the mail server uses a self-signed certificate
-        //props.put("mail.smtp.starttls.enable", true);
+        props.put("mail.smtp.starttls.enable", true);
 
         props.put("mail.smtp.host", config.getHost());
         props.put("mail.smtp.port", config.getPort());
@@ -54,22 +56,16 @@ public class EmailSender {
 
     /**
      * Send greetings by email
+     * @throws InterruptedException 
      */
-    public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException {
-        validateParameters(email, subject, text);
-
+    @Async
+    public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException, InterruptedException {
         Message message = composeMessage(email, subject, text, isHTMLMessage, attachment);
 
+//      Uncomment next line to test threads
+//        Thread.sleep(10000);
         Transport.send(message);
-    }
-
-    private void validateParameters(String email, String subject, String text) {
-        // I like to validate input parameters of service public methods, to ensure that each client sends all the needed parameters.
-        // I send runtime exceptions in this case, not forcing the clients to handle specific checked exceptions.
-        Assert.isTrue(!StringUtils.isEmpty(email), "Email recipient must be specified");
-        Assert.isTrue(emailValidation.isEmailValid(email), "Email recipient not in valid format");
-        Assert.isTrue(!StringUtils.isEmpty(subject), "Email subject must be specified");
-        Assert.isTrue(!StringUtils.isEmpty(text), "Email content must be specified");
+        log.info("Email sent to {}", email);
     }
 
     /**

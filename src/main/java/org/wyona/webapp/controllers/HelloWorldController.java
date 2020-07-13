@@ -39,6 +39,7 @@ public class HelloWorldController {
 
     /**
      * Send greetings by email
+     * @throws InterruptedException 
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Generate greeting and send greeting as email when address specified")
@@ -49,7 +50,7 @@ public class HelloWorldController {
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'") @RequestParam(name = "email", required = false) String email
         // TODO: Use @javax.validation.constraints.Email to validate email address 
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
-        ) throws MessagingException {
+        ) throws MessagingException, InterruptedException {
 
         log.info("Send greeting to '" + email + "'...");
         return new ResponseEntity<>(mailerService.sendEmail(email, new Greeting("World")), HttpStatus.OK);
@@ -57,6 +58,7 @@ public class HelloWorldController {
 
     /**
      * Send greetings by email, whereas subject and body text can be set
+     * @throws InterruptedException 
      */
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Send an email with provided text and subject (and optional attachment) to email address which is specified")
@@ -70,7 +72,7 @@ public class HelloWorldController {
     public ResponseEntity<Email> sendEmail(@ApiParam(name = "emailAddress", value = "e-mail to be sent to", required = true) @RequestPart String emailAddress,
                                            @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
                                            @ApiParam(name = "emailText", value = "e-mail text") @RequestPart(required = false)  String emailText,
-                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
+                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
 
         // TODO: Check whether format of emailText is HTML
         Email email = new Email(emailAddress, emailSubject, emailText, false).attachment(emailAttachment);
@@ -87,6 +89,7 @@ public class HelloWorldController {
 
     /**
      * Send greetings by email for a specific language
+     * @throws InterruptedException 
      */
     @PostMapping("/send/lang")
     @ApiOperation(value = "Send a language specific greeting to a provided email address")
@@ -97,7 +100,7 @@ public class HelloWorldController {
     ResponseEntity<String> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request,
             @RequestHeader(value = "Accept-Language", defaultValue = "de") String lang,
             @ApiParam(name = "name", value = "Name of person to be greeted, e.g. 'Michael'") @RequestParam(name = "name", required = true) String name
-            ) throws MessagingException{
+            ) throws MessagingException, InterruptedException{
         String greetingText = greetingService.getGreetingText(lang, name);
         mailerService.sendEmail(request.getEmail(), "Greeting in " + lang, greetingText, true);
         return ResponseEntity.ok(greetingText);

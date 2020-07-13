@@ -47,6 +47,7 @@ public class ContactFormController {
 
     /**
      * Send contact information by email
+     * @throws InterruptedException 
      */
     @PostMapping(value = "/contact", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Send contact information (and optional attachment) to configured email address")
@@ -57,7 +58,7 @@ public class ContactFormController {
                                            @ApiParam(name = "name", value = "name of person sending contact information") @RequestPart(required = false) String name,
                                            @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
                                            @ApiParam(name = "emailText", value = "e-mail message") @RequestPart(required = false)  String emailText,
-                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
+                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
         Email email = new Email(contactEmail, emailSubject, "Contact request from: " + emailAddress + ", " + name + "\n\nMessage: \n\n" + emailText, false).attachment(emailAttachment);
 
         email.setSubject(emailValidation.getDefaultSubjectIfSubjectEmpty(email.getSubject()));
