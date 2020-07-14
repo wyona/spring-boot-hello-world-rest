@@ -56,17 +56,20 @@ public class EmailSender {
 
     /**
      * Send greetings by email
-     * @throws InterruptedException 
      */
     @Async
-    public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException, InterruptedException {
+    public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException {
         Message message = composeMessage(email, subject, text, isHTMLMessage, attachment);
 
         // TEST: Uncomment lines below to test thread
 /*
-        for (int i = 0; i < 5; i++) {
-            log.info("Sleep for 2 seconds ...");
-            Thread.sleep(2000);
+        try {
+            for (int i = 0; i < 5; i++) {
+                log.info("Sleep for 2 seconds ...");
+                Thread.sleep(2000);
+            }
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
         }
 */
 

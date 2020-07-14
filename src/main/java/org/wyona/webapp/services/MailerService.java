@@ -31,9 +31,8 @@ public class MailerService {
     /**
      * @param recipient E-Mail address of recipient
      * @param greeting Greeting which will be sent to recipient
-     * @throws InterruptedException 
      */
-    public Greeting sendEmail(String recipient, Greeting greeting) throws MessagingException, InterruptedException {
+    public Greeting sendEmail(String recipient, Greeting greeting) throws MessagingException {
         // TODO: Check whether format of greeting body is HTML
         sendEmail(new Email(recipient, greeting.getGreeting(), greeting.getGreeting(), false));
 
@@ -46,22 +45,23 @@ public class MailerService {
      * @param subject Email subject
      * @param text Email body text
      * @param isHTMLMessage True when text is HTML and false when text is plain
-     * @throws InterruptedException 
      */
-    public void sendEmail(String email, String subject, String text, boolean isHTMLMessage) throws MessagingException, InterruptedException {
+    public void sendEmail(String email, String subject, String text, boolean isHTMLMessage) throws MessagingException {
         sendEmail(new Email(email, subject, text, isHTMLMessage));
     }
 
     /**
      * @param email Email object, containing email address, subject and body text
-     * @throws InterruptedException 
      */
-    public void sendEmail(Email email) throws MessagingException, InterruptedException {
+    public void sendEmail(Email email) throws MessagingException {
     	validateParameters(email.getEmail(), email.getSubject(), email.getText());
     	log.info("Sending email to {}", email.getEmail());
         emailSender.sendEmailGreeting(email.getEmail(), email.getSubject(), email.getText(), email.isHTMLMessage(), email.getAttachment());
     }
-    
+
+    /**
+     * Validate email parameters
+     */
     private void validateParameters(String email, String subject, String text) {
         // I like to validate input parameters of service public methods, to ensure that each client sends all the needed parameters.
         // I send runtime exceptions in this case, not forcing the clients to handle specific checked exceptions.

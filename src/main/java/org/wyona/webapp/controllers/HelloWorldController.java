@@ -39,7 +39,6 @@ public class HelloWorldController {
 
     /**
      * Send greetings by email
-     * @throws InterruptedException 
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(value="Generate greeting and send greeting as email when address specified")
@@ -50,7 +49,7 @@ public class HelloWorldController {
         @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'") @RequestParam(name = "email", required = false) String email
         // TODO: Use @javax.validation.constraints.Email to validate email address 
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
-        ) throws MessagingException, InterruptedException {
+        ) throws MessagingException {
 
         log.info("Send greeting to '" + email + "'...");
         return new ResponseEntity<>(mailerService.sendEmail(email, new Greeting("World")), HttpStatus.OK);
