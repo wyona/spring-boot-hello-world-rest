@@ -39,7 +39,7 @@ public class EmailSender {
         props.put("mail.smtp.auth", true);
 
         // TODO: Seems to cause trouble, when the mail server uses a self-signed certificate
-        props.put("mail.smtp.starttls.enable", true);
+        //props.put("mail.smtp.starttls.enable", true);
 
         props.put("mail.smtp.host", config.getHost());
         props.put("mail.smtp.port", config.getPort());
@@ -62,8 +62,14 @@ public class EmailSender {
     public void sendEmailGreeting(String email, String subject, String text, boolean isHTMLMessage, MultipartFile attachment) throws MessagingException, InterruptedException {
         Message message = composeMessage(email, subject, text, isHTMLMessage, attachment);
 
-//      Uncomment next line to test threads
-//        Thread.sleep(10000);
+        // TEST: Uncomment lines below to test thread
+/*
+        for (int i = 0; i < 5; i++) {
+            log.info("Sleep for 2 seconds ...");
+            Thread.sleep(2000);
+        }
+*/
+
         Transport.send(message);
         log.info("Email sent to {}", email);
     }
