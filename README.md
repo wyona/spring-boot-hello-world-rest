@@ -9,14 +9,21 @@ Requirements
 
 * JDK: 1.8
 * Maven version: 3.3.3 (Please double check Maven .m2/settings.xml)
-* Either Tomcat: 8 (please build.sh)
+* Either Tomcat: 8 (please see build.sh)
 * or Docker (please see below)
+* or from command line
 
-Build and deploy
-----------------
+Build and deploy inside Tomcat
+------------------------------
 
 * Configure mail server inside src/main/resources/application.properties
 * sh build.sh
+
+Build and run from command line
+-------------------------------
+
+* mvn clean install
+* java -jar target/hello-world-webapp-1.0.0-SNAPSHOT.war
 
 Browser
 -------
