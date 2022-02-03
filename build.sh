@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOMCAT_HOME=/Users/michaelwechner/local/apache-tomcat-8.0.26
+TOMCAT_HOME=/Users/michaelwechner/local/apache-tomcat-8.5.53
 
 echo "INFO: Build 'Hello World' webapp ..."
 mvn clean install -Dmaven.test.skip=true
