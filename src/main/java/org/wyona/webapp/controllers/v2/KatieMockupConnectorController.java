@@ -28,8 +28,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @PostMapping("/tenant")
     @ApiOperation(value = "Create tenant")
     public ResponseEntity<String> createTenant(@RequestBody Domain domain) {
-        log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
-        return new ResponseEntity<>("{}", HttpStatus.OK);
+        return createTenantWeaviateImpl(domain);
+
+        //log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
+        //return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**
@@ -52,6 +54,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @ApiOperation(value = "Add QnA")
     public ResponseEntity<String> train(@RequestBody QnA qna) {
         log.info("TODO: Train QnA ...");
+        return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private ResponseEntity<String> createTenantWeaviateImpl(Domain domain) {
+        log.info("TODO: Weaviate Impl: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 }
