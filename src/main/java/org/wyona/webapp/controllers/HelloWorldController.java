@@ -30,7 +30,7 @@ import javax.validation.Valid;
  */
 @Slf4j
 @RestController
-@RequestMapping(value = "/api/greeting")
+@RequestMapping(value = "/api/v1/greeting")
 @AllArgsConstructor
 public class HelloWorldController {
     private MailerService mailerService;
