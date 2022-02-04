@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.wyona.webapp.models.LanguageEmail;
 
 import lombok.extern.slf4j.Slf4j;
+import org.wyona.webapp.models.katie.Domain;
 
 /**
  * 'Katie Mockup Connector' Controller
@@ -29,9 +30,9 @@ public class KatieMockupConnectorController {
             @ApiResponse(code = 400, message = "Bad Request"),
             @ApiResponse(code = 200, response = String.class, message = "Tenant Id")
     })
-    ResponseEntity<String> createTenant(@RequestBody LanguageEmail request
+    ResponseEntity<String> createTenant(@RequestBody Domain domain
             ){
-        log.info("TODO: Create tenant associated with Katie domain ID '" + "TODO" + "' ...");
+        log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
         return ResponseEntity.ok("TODO");
     }
 
