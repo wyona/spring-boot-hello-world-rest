@@ -26,14 +26,10 @@ public class KatieMockupConnectorController {
      */
     @PostMapping("/tenant")
     @ApiOperation(value = "Create tenant")
-    @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request"),
-            @ApiResponse(code = 200, response = String.class, message = "Tenant Id")
-    })
     ResponseEntity<String> createTenant(@RequestBody Domain domain
             ){
         log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
-        return ResponseEntity.ok("TODO");
+        return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**
