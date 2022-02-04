@@ -11,6 +11,7 @@ import org.wyona.webapp.models.LanguageEmail;
 
 import lombok.extern.slf4j.Slf4j;
 import org.wyona.webapp.models.katie.Domain;
+import org.wyona.webapp.models.katie.QnA;
 
 /**
  * 'Katie Mockup Connector' Controller
@@ -19,29 +20,38 @@ import org.wyona.webapp.models.katie.Domain;
 @RestController
 @RequestMapping(value = "/api/v2")
 @AllArgsConstructor
-public class KatieMockupConnectorController {
+public class KatieMockupConnectorController implements KatieConnectorController {
 
     /**
-     * Create tenant
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain)
      */
     @PostMapping("/tenant")
     @ApiOperation(value = "Create tenant")
-    ResponseEntity<String> createTenant(@RequestBody Domain domain
-            ){
+    public ResponseEntity<String> createTenant(@RequestBody Domain domain) {
         log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**
-     * Delete tenant
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteTenant(String)
      */
     @DeleteMapping("/tenant/{domain-id}")
     @ApiOperation(value = "Delete tenant")
-    ResponseEntity<?> deleteTenant(
+    public ResponseEntity<?> deleteTenant(
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId
     ){
         log.info("TODO: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA)
+     */
+    @PostMapping("/qna")
+    @ApiOperation(value = "Add QnA")
+    public ResponseEntity<String> train(@RequestBody QnA qna) {
+        log.info("TODO: Train QnA ...");
+        return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 }
