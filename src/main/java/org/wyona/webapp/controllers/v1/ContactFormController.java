@@ -1,4 +1,4 @@
-package org.wyona.webapp.controllers;
+package org.wyona.webapp.controllers.v1;
 
 import io.swagger.annotations.*;
 
