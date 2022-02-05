@@ -50,8 +50,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId
     ){
-        log.info("TODO: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
-        return new ResponseEntity<>(HttpStatus.OK);
+        return deleteTenantWeaviateImpl(domainId);
+
+        //log.info("TODO: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
+        //return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -62,6 +64,27 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     public ResponseEntity<String> train(@RequestBody QnA qna) {
         log.info("TODO: Train QnA ...");
         return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private ResponseEntity<String> deleteTenantWeaviateImpl(String domainId) {
+        log.info("Weaviate Impl: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
+        Config config = new Config(weaviateProtocol, weaviateHost);
+        WeaviateClient client = new WeaviateClient(config);
+
+        Result<Boolean> result = client.data().deleter()
+                .withID(domainId)
+                .run();
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            log.info("" + result.getResult());
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
