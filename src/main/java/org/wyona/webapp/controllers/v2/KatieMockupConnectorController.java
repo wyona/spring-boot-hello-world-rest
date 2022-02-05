@@ -17,6 +17,8 @@ import technology.semi.weaviate.client.v1.data.model.WeaviateObject;
 import technology.semi.weaviate.client.base.Result;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
+import java.util.UUID;
+
 /**
  * 'Katie Mockup Connector' Controller
  */
@@ -62,8 +64,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @PostMapping("/qna")
     @ApiOperation(value = "Add QnA")
     public ResponseEntity<String> train(@RequestBody QnA qna) {
-        log.info("TODO: Train QnA ...");
-        return new ResponseEntity<>("{}", HttpStatus.OK);
+        return trainWeaviateImpl(qna);
+
+        //log.info("TODO: Train QnA ...");
+        //return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**
@@ -81,7 +85,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
-            log.info("" + result.getResult());
+            log.info("Delete tenant result: " + result.getResult());
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -107,7 +111,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
-            log.info("" + result.getResult());
+            log.info("Create tenant result: " + result.getResult());
         }
 
         /*
@@ -122,5 +126,45 @@ public class KatieMockupConnectorController implements KatieConnectorController 
          */
 
         return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private ResponseEntity<String> trainWeaviateImpl(QnA qna) {
+        log.info("Weaviate Impl: Index QnA associated with Katie domain ID '" + qna.getDomainId() + "' ...");
+
+        index(qna.getDomainId(), qna.getUuid(), "Question", "question", qna.getQuestion());
+        index(qna.getDomainId(), qna.getUuid(), "Answer", "answer", qna.getAnswer());
+
+        return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private void index(String domainId, String uuid, String clazzName, String key, String value) {
+        log.info("Weaviate Impl: Index '" + key + "' of QnA associated with Katie domain ID '" + domainId + "' ...");
+        Config config = new Config(weaviateProtocol, weaviateHost);
+        WeaviateClient client = new WeaviateClient(config);
+
+        java.util.Map<String, Object> properties = new java.util.HashMap<>();
+        properties.put("qnaId", uuid);
+        properties.put(key, value); // TODO: escape and replace new lines
+        properties.put("tenant", new java.util.HashMap() { {
+            put("beacon", "weaviate://localhost/" + domainId);
+        } });
+
+        Result<WeaviateObject> result = client.data().creator()
+                .withClassName(clazzName)
+                .withID(UUID.randomUUID().toString())
+                .withProperties(properties)
+                .run();
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            log.info("Index value result: " + result.getResult());
+        }
     }
 }
