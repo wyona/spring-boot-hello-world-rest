@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
+import org.wyona.webapp.models.katie.Sentence;
 
 import technology.semi.weaviate.client.Config;
 import technology.semi.weaviate.client.WeaviateClient;
@@ -68,6 +69,18 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         //log.info("TODO: Train QnA ...");
         //return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence)
+     */
+    @PostMapping("/ask")
+    @ApiOperation(value = "Ask question")
+    public ResponseEntity<?> getAnswers(@RequestBody Sentence question) {
+        //return getAnswersWeaviateImpl(question);
+
+        log.info("TODO: Get answers to question '" + question.getText() + "' ...");
+        return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**

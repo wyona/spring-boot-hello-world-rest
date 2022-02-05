@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
+import org.wyona.webapp.models.katie.Sentence;
 
 public interface KatieConnectorController {
 
@@ -24,4 +25,11 @@ public interface KatieConnectorController {
      * @param qna Question and answer
      */
     public ResponseEntity<?> train(QnA qna);
+
+    /**
+     * Get answers to question
+     * @param question Asked question
+     * @return answers to question
+     */
+    public ResponseEntity<?> getAnswers(Sentence question);
 }
