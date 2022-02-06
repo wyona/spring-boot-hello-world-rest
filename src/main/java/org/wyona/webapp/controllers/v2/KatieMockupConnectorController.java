@@ -16,6 +16,9 @@ import technology.semi.weaviate.client.Config;
 import technology.semi.weaviate.client.WeaviateClient;
 import technology.semi.weaviate.client.v1.data.model.WeaviateObject;
 import technology.semi.weaviate.client.base.Result;
+import technology.semi.weaviate.client.v1.graphql.model.GraphQLResponse;
+import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
+import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
 import java.util.UUID;
@@ -77,9 +80,36 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @PostMapping("/ask")
     @ApiOperation(value = "Ask question")
     public ResponseEntity<?> getAnswers(@RequestBody Sentence question) {
-        //return getAnswersWeaviateImpl(question);
+        return getAnswersWeaviateImpl(question);
 
-        log.info("TODO: Get answers to question '" + question.getText() + "' ...");
+        //log.info("TODO: Get answers to question '" + question.getText() + "' ...");
+        //return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private ResponseEntity<String> getAnswersWeaviateImpl(Sentence question) {
+        log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + "TODO" + "' ...");
+
+        Config config = new Config(weaviateProtocol, weaviateHost);
+        WeaviateClient client = new WeaviateClient(config);
+
+        Field questionField = Field.builder().name("question").build();
+        Fields fields = Fields.builder().fields(new Field[]{ questionField }).build();
+
+        Result<GraphQLResponse> result = client.graphQL().get()
+                .withClassName("Question")
+                .withFields(fields)
+                .run();
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            log.info("Answers: " + result.getResult());
+        }
+
+
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
