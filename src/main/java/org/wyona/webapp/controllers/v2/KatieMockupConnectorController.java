@@ -51,6 +51,8 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private static final String FIELD_QUESTION = "question";
     private static final String CLAZZ_ANSWER = "Answer";
     private static final String FIELD_ANSWER = "answer";
+    private static final String CLAZZ_TENANT = "Tenant";
+    private static final String FIELD_TENANT = "tenant";
 
     /**
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain)
@@ -147,7 +149,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
 
         log.info("Search within knowledge base with domain Id: " + domainId);
-        String[] path = {"tenant", "Tenant", "id"};
+        String[] path = {FIELD_TENANT, CLAZZ_TENANT, "id"};
         WhereArgument whereArgument = WhereArgument.builder().
                 operator(WhereOperator.Equal).
                 valueString(domainId).
@@ -315,7 +317,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         properties.put("name", domain.getName());
 
         Result<WeaviateObject> result = client.data().creator()
-                .withClassName("Tenant")
+                .withClassName(CLAZZ_TENANT)
                 .withID(domain.getId())
                 .withProperties(properties)
                 .run();
@@ -363,7 +365,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         java.util.Map<String, Object> properties = new java.util.HashMap<>();
         properties.put("qnaId", uuid);
         properties.put(key, value); // TODO: escape and replace new lines
-        properties.put("tenant", new java.util.HashMap() { {
+        properties.put(FIELD_TENANT, new java.util.HashMap() { {
             put("beacon", "weaviate://localhost/" + domainId);
         } });
 
