@@ -19,6 +19,7 @@ import technology.semi.weaviate.client.WeaviateClient;
 import technology.semi.weaviate.client.v1.data.model.WeaviateObject;
 import technology.semi.weaviate.client.base.Result;
 import technology.semi.weaviate.client.v1.graphql.model.GraphQLResponse;
+import technology.semi.weaviate.client.v1.graphql.query.argument.AskArgument;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
@@ -103,8 +104,13 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Field uuidField = Field.builder().name("qnaId").build();
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
+        // TODO: Also use domain Id
+        Float certaintyThreshold = Float.parseFloat("0.5");
+        AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
+
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName("Question")
+                .withAsk(askArgument)
                 .withFields(fields)
                 .run();
 
