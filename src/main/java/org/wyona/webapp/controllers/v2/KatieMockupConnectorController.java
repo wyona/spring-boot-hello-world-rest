@@ -1,5 +1,7 @@
 package org.wyona.webapp.controllers.v2;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
 
 import lombok.AllArgsConstructor;
@@ -93,6 +95,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + "TODO" + "' ...");
 
+        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
         Config config = new Config(weaviateProtocol, weaviateHost);
         WeaviateClient client = new WeaviateClient(config);
 
@@ -106,12 +109,19 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 .run();
 
         java.util.List<String> ids = new ArrayList<String>();
+
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
-            log.info("Answers: " + result.getResult().getData());
-            ids.add("TODO1");
-            ids.add("TODO2");
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
+            log.info("Answers: " + dataNode);
+            JsonNode questionNode = dataNode.get("Get").get("Question");
+            if (questionNode.isArray()) {
+                for (JsonNode answer: questionNode) {
+                    ids.add(answer.get("qnaId").asText());
+                }
+            }
         }
 
         return new ResponseEntity<>(ids.toArray(new String[0]), HttpStatus.OK);
