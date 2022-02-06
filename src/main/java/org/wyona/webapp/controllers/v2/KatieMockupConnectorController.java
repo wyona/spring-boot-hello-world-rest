@@ -105,6 +105,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
         // TODO: Also use domain Id
+        log.info("Domain Id: " + question.getDomainId());
         Float certaintyThreshold = Float.parseFloat("0.5");
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
 
