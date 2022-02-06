@@ -21,6 +21,7 @@ import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -79,7 +80,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @PostMapping("/ask")
     @ApiOperation(value = "Ask question")
-    public ResponseEntity<?> getAnswers(@RequestBody Sentence question) {
+    public ResponseEntity<String[]> getAnswers(@RequestBody Sentence question) {
         return getAnswersWeaviateImpl(question);
 
         //log.info("TODO: Get answers to question '" + question.getText() + "' ...");
@@ -89,28 +90,31 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     /**
      *
      */
-    private ResponseEntity<String> getAnswersWeaviateImpl(Sentence question) {
+    private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + "TODO" + "' ...");
 
         Config config = new Config(weaviateProtocol, weaviateHost);
         WeaviateClient client = new WeaviateClient(config);
 
         Field questionField = Field.builder().name("question").build();
-        Fields fields = Fields.builder().fields(new Field[]{ questionField }).build();
+        Field uuidField = Field.builder().name("qnaId").build();
+        Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName("Question")
                 .withFields(fields)
                 .run();
 
+        java.util.List<String> ids = new ArrayList<String>();
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
-            log.info("Answers: " + result.getResult());
+            log.info("Answers: " + result.getResult().getData());
+            ids.add("TODO1");
+            ids.add("TODO2");
         }
 
-
-        return new ResponseEntity<>("{}", HttpStatus.OK);
+        return new ResponseEntity<>(ids.toArray(new String[0]), HttpStatus.OK);
     }
 
     /**

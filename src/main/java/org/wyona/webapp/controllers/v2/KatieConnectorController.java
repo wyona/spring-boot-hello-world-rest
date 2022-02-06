@@ -27,9 +27,9 @@ public interface KatieConnectorController {
     public ResponseEntity<?> train(QnA qna);
 
     /**
-     * Get answers to question
+     * Get UUIDs of answers to question
      * @param question Asked question
-     * @return answers to question
+     * @return UUIDs of answers to question
      */
-    public ResponseEntity<?> getAnswers(Sentence question);
+    public ResponseEntity<String[]> getAnswers(Sentence question);
 }
