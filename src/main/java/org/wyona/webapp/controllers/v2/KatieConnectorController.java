@@ -23,13 +23,15 @@ public interface KatieConnectorController {
     /**
      * Add/train a particular question/answer associated with a particular domain
      * @param qna Question and answer
+     * @param domainId Domain Id QnA is associated with
      */
-    public ResponseEntity<?> train(QnA qna);
+    public ResponseEntity<?> train(QnA qna, String domainId);
 
     /**
      * Get UUIDs of answers to question
      * @param question Asked question
+     * @param domainId Domain Id of knowledge base
      * @return UUIDs of answers to question
      */
-    public ResponseEntity<String[]> getAnswers(Sentence question);
+    public ResponseEntity<String[]> getAnswers(Sentence question, String domainId);
 }

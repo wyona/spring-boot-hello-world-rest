@@ -6,7 +6,6 @@ package org.wyona.webapp.models.katie;
 public class Sentence {
 
     private String text;
-    private String domainId;
 
     /**
      *
@@ -26,19 +25,5 @@ public class Sentence {
      */
     public String getText() {
         return text;
-    }
-
-    /**
-     *
-     */
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
-
-    /**
-     *
-     */
-    public String getDomainId() {
-        return domainId;
     }
 }

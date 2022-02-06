@@ -67,24 +67,32 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA, String)
      */
-    @PostMapping("/qna")
+    @PostMapping("/qna/{domain-id}")
     @ApiOperation(value = "Add QnA")
-    public ResponseEntity<String> train(@RequestBody QnA qna) {
-        return trainWeaviateImpl(qna);
+    public ResponseEntity<String> train(
+            @RequestBody QnA qna,
+            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @PathVariable(name = "domain-id", required = true) String domainId
+    ) {
+        return trainWeaviateImpl(qna, domainId);
 
         //log.info("TODO: Train QnA ...");
         //return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence, String)
      */
-    @PostMapping("/ask")
+    @PostMapping("/ask/{domain-id}")
     @ApiOperation(value = "Ask question")
-    public ResponseEntity<String[]> getAnswers(@RequestBody Sentence question) {
-        return getAnswersWeaviateImpl(question);
+    public ResponseEntity<String[]> getAnswers(
+            @RequestBody Sentence question,
+            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @PathVariable(name = "domain-id", required = true) String domainId
+    ) {
+        return getAnswersWeaviateImpl(question, domainId);
 
         //log.info("TODO: Get answers to question '" + question.getText() + "' ...");
         //return new ResponseEntity<>("{}", HttpStatus.OK);
@@ -93,7 +101,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     /**
      *
      */
-    private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question) {
+    private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + "TODO" + "' ...");
 
         // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
@@ -105,7 +113,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
         // TODO: Also use domain Id
-        log.info("Domain Id: " + question.getDomainId());
+        log.info("Domain Id: " + domainId);
         Float certaintyThreshold = Float.parseFloat("0.5");
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
 
@@ -198,11 +206,11 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     /**
      *
      */
-    private ResponseEntity<String> trainWeaviateImpl(QnA qna) {
-        log.info("Weaviate Impl: Index QnA associated with Katie domain ID '" + qna.getDomainId() + "' ...");
+    private ResponseEntity<String> trainWeaviateImpl(QnA qna, String domainId) {
+        log.info("Weaviate Impl: Index QnA associated with Katie domain ID '" + domainId + "' ...");
 
-        index(qna.getDomainId(), qna.getUuid(), "Question", "question", qna.getQuestion());
-        index(qna.getDomainId(), qna.getUuid(), "Answer", "answer", qna.getAnswer());
+        index(domainId, qna.getUuid(), "Question", "question", qna.getQuestion());
+        index(domainId, qna.getUuid(), "Answer", "answer", qna.getAnswer());
 
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
