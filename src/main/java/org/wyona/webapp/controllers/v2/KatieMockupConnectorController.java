@@ -195,21 +195,31 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private ResponseEntity<String> deleteQnAWeaviateImpl(String domainId, String uuid) {
         log.info("Weaviate Impl: Delete Qna '" + uuid + "' associated with Katie domain ID '" + domainId + "' ...");
 
-        String[] ids = getQuestionsAndAnswers(uuid, domainId);
         boolean allDeleted = true;
 
-        for (String id: ids) {
+        String[] questionIds = getQuestionsOrAnswers(uuid, domainId, "Question");
+        for (String id: questionIds) {
             if (!deleteObject(id)) {
                 allDeleted = false;
             }
         }
 
-        log.info("All objects deleted: " + allDeleted);
+        String[] answerIds = getQuestionsOrAnswers(uuid, domainId, "Answer");
+        for (String id: answerIds) {
+            if (!deleteObject(id)) {
+                allDeleted = false;
+            }
+        }
+
+        log.info("All questions and answers deleted: " + allDeleted);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
-     *
+     * Delete object stored by Weaviate
+     * @param id Object Id
+     * @return true when object was deleted and false otherwise
      */
     private boolean deleteObject(String id) {
         Config config = new Config(weaviateProtocol, weaviateHost);
@@ -229,10 +239,11 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * Get UUIDs of all Questions and Answers associated with a particular QnA
-     * @return array of UUIDs of all Questions and Answers associated with a particular QnA
+     * Get IDs of all Questions or Answers associated with a particular QnA
+     * @param clazzName Schema class name, either "Question" or "Answer"
+     * @return array of IDs of all Questions or Answers associated with a particular QnA
      */
-    private String[] getQuestionsAndAnswers(String qnaUuid, String domainId) {
+    private String[] getQuestionsOrAnswers(String qnaUuid, String domainId, String clazzName) {
         List<String> ids = new ArrayList<String>();
 
         // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
@@ -255,15 +266,13 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 path(path).
                 build();
 
-        log.info("Get all objects linked with QnA '" + qnaUuid + "' ...");
+        log.info("Get all objects '" + clazzName + "' linked with QnA '" + qnaUuid + "' ...");
 
         Result<GraphQLResponse> result = client.graphQL().get()
-                .withClassName("Question")
+                .withClassName(clazzName)
                 .withWhere(whereArgument)
                 .withFields(fields)
                 .run();
-
-        // TODO: Also search within schema class Answer
 
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
@@ -271,7 +280,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
             log.info("Answers: " + dataNode);
-            JsonNode questionNodes = dataNode.get("Get").get("Question");
+            JsonNode questionNodes = dataNode.get("Get").get(clazzName);
             if (questionNodes.isArray()) {
                 for (JsonNode question: questionNodes) {
                     JsonNode additionalNode = question.get("_additional");
