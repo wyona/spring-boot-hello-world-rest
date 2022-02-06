@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,11 +38,14 @@ import java.util.UUID;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v2")
-@AllArgsConstructor
+//@AllArgsConstructor
 public class KatieMockupConnectorController implements KatieConnectorController {
 
-    private static final String weaviateHost = "localhost:8080";
-    private static final String weaviateProtocol = "http";
+    @Value("${weaviate.host}")
+    private String weaviateHost;
+
+    @Value("${weaviate.protocol}")
+    private String weaviateProtocol;
 
     private static final String CLAZZ_QUESTION = "Question";
     private static final String FIELD_QUESTION = "question";
