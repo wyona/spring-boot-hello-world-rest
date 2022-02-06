@@ -20,11 +20,14 @@ import technology.semi.weaviate.client.v1.data.model.WeaviateObject;
 import technology.semi.weaviate.client.base.Result;
 import technology.semi.weaviate.client.v1.graphql.model.GraphQLResponse;
 import technology.semi.weaviate.client.v1.graphql.query.argument.AskArgument;
+import technology.semi.weaviate.client.v1.graphql.query.argument.WhereArgument;
+import technology.semi.weaviate.client.v1.graphql.query.argument.WhereOperator;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -112,14 +115,22 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Field uuidField = Field.builder().name("qnaId").build();
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
-        // TODO: Also use domain Id
-        log.info("Domain Id: " + domainId);
         Float certaintyThreshold = Float.parseFloat("0.5");
+
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
+
+        log.info("Search within knowledge base with domain Id: " + domainId);
+        String[] path = {"tenant", "Tenant", "id"};
+        WhereArgument whereArgument = WhereArgument.builder().
+                operator(WhereOperator.Equal).
+                valueString(domainId).
+                path(path).
+                build();
 
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName("Question")
                 .withAsk(askArgument)
+                //.withWhere(whereArgument)
                 .withFields(fields)
                 .withLimit(10)
                 .run();
