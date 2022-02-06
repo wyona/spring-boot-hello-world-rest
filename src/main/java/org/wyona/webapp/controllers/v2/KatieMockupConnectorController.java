@@ -28,6 +28,7 @@ import technology.semi.weaviate.client.v1.misc.model.Meta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -102,6 +103,23 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteQnA(String, String)
+     */
+    @DeleteMapping("/qna/{domain-id}/{uuid}")
+    @ApiOperation(value = "Delete QnA")
+    public ResponseEntity<?> deleteQnA(
+            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @PathVariable(name = "domain-id", required = true) String domainId,
+            @ApiParam(name = "uuid", value = "UUID of QnA", required = true)
+            @PathVariable(name = "uuid", required = true) String uuid
+    ) {
+        return deleteQnAWeaviateImpl(domainId, uuid);
+
+        //log.info("TODO: Delete QnA '" + uuid + "' ...");
+        //return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
      *
      */
     private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
@@ -145,10 +163,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
             log.info("Answers: " + dataNode);
-            JsonNode questionNode = dataNode.get("Get").get("Question");
-            if (questionNode.isArray()) {
-                for (JsonNode answer: questionNode) {
-                    ids.add(answer.get("qnaId").asText());
+            JsonNode questionNodes = dataNode.get("Get").get("Question");
+            if (questionNodes.isArray()) {
+                for (JsonNode qNode: questionNodes) {
+                    ids.add(qNode.get("qnaId").asText());
                 }
             }
         }
@@ -161,20 +179,110 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     private ResponseEntity<String> deleteTenantWeaviateImpl(String domainId) {
         log.info("Weaviate Impl: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
+
+        if (deleteObject(domainId)) {
+            log.info("Tenant '" + domainId + "' has been deleted successfully.");
+        } else {
+            log.error("Deleting tenant '" + domainId + "' failed!");
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private ResponseEntity<String> deleteQnAWeaviateImpl(String domainId, String uuid) {
+        log.info("Weaviate Impl: Delete Qna '" + uuid + "' associated with Katie domain ID '" + domainId + "' ...");
+
+        String[] ids = getQuestionsAndAnswers(uuid, domainId);
+        boolean allDeleted = true;
+
+        for (String id: ids) {
+            if (!deleteObject(id)) {
+                allDeleted = false;
+            }
+        }
+
+        log.info("All objects deleted: " + allDeleted);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private boolean deleteObject(String id) {
         Config config = new Config(weaviateProtocol, weaviateHost);
         WeaviateClient client = new WeaviateClient(config);
 
         Result<Boolean> result = client.data().deleter()
-                .withID(domainId)
+                .withID(id)
                 .run();
 
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
+            return false;
         } else {
-            log.info("Delete tenant result: " + result.getResult());
+            log.info("Delete object result: " + result.getResult());
+            return true;
+        }
+    }
+
+    /**
+     * Get UUIDs of all Questions and Answers associated with a particular QnA
+     * @return array of UUIDs of all Questions and Answers associated with a particular QnA
+     */
+    private String[] getQuestionsAndAnswers(String qnaUuid, String domainId) {
+        List<String> ids = new ArrayList<String>();
+
+        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
+        Config config = new Config(weaviateProtocol, weaviateHost);
+        WeaviateClient client = new WeaviateClient(config);
+
+        Field idField = Field.builder().name("id").build();
+        Field[] subFields = new Field[1];
+        subFields[0] = idField;
+
+        Field additonalField = Field.builder().name("_additional").fields(subFields).build();
+        Fields fields = Fields.builder().fields(new Field[]{ additonalField }).build();
+
+        log.info("TODO: Search within knowledge base with domain Id: " + domainId);
+
+        String[] path = {"qnaId"};
+        WhereArgument whereArgument = WhereArgument.builder().
+                operator(WhereOperator.Equal).
+                valueString(qnaUuid).
+                path(path).
+                build();
+
+        log.info("Get all objects linked with QnA '" + qnaUuid + "' ...");
+
+        Result<GraphQLResponse> result = client.graphQL().get()
+                .withClassName("Question")
+                .withWhere(whereArgument)
+                .withFields(fields)
+                .run();
+
+        // TODO: Also search within schema class Answer
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
+            log.info("Answers: " + dataNode);
+            JsonNode questionNodes = dataNode.get("Get").get("Question");
+            if (questionNodes.isArray()) {
+                for (JsonNode question: questionNodes) {
+                    JsonNode additionalNode = question.get("_additional");
+                    log.info("_additional: " + additionalNode);
+                    String id = additionalNode.get("id").asText();
+                    ids.add(id);
+                }
+            }
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ids.toArray(new String[0]);
     }
 
     /**

@@ -34,4 +34,11 @@ public interface KatieConnectorController {
      * @return UUIDs of answers to question
      */
     public ResponseEntity<String[]> getAnswers(Sentence question, String domainId);
+
+    /**
+     * Delete a particular QnA
+     * @param domainId Domain Id the QnA is associated with
+     * @param uuid UUID of QnA
+     */
+    public ResponseEntity<?> deleteQnA(String domainId, String uuid);
 }
