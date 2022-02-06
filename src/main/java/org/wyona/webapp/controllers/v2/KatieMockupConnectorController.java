@@ -43,6 +43,11 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private static final String weaviateHost = "localhost:8080";
     private static final String weaviateProtocol = "http";
 
+    private static final String CLAZZ_QUESTION = "Question";
+    private static final String FIELD_QUESTION = "question";
+    private static final String CLAZZ_ANSWER = "Answer";
+    private static final String FIELD_ANSWER = "answer";
+
     /**
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain)
      */
@@ -129,7 +134,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Config config = new Config(weaviateProtocol, weaviateHost);
         WeaviateClient client = new WeaviateClient(config);
 
-        Field questionField = Field.builder().name("question").build();
+        Field questionField = Field.builder().name(FIELD_QUESTION).build();
         Field uuidField = Field.builder().name("qnaId").build();
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
@@ -146,7 +151,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 build();
 
         Result<GraphQLResponse> result = client.graphQL().get()
-                .withClassName("Question")
+                .withClassName(CLAZZ_QUESTION)
                 .withAsk(askArgument)
                 //.withWhere(whereArgument)
                 .withFields(fields)
@@ -163,7 +168,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
             log.info("Answers: " + dataNode);
-            JsonNode questionNodes = dataNode.get("Get").get("Question");
+            JsonNode questionNodes = dataNode.get("Get").get(CLAZZ_QUESTION);
             if (questionNodes.isArray()) {
                 for (JsonNode qNode: questionNodes) {
                     ids.add(qNode.get("qnaId").asText());
@@ -197,14 +202,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         boolean allDeleted = true;
 
-        String[] questionIds = getQuestionsOrAnswers(uuid, domainId, "Question");
+        String[] questionIds = getQuestionsOrAnswers(uuid, domainId, CLAZZ_QUESTION);
         for (String id: questionIds) {
             if (!deleteObject(id)) {
                 allDeleted = false;
             }
         }
 
-        String[] answerIds = getQuestionsOrAnswers(uuid, domainId, "Answer");
+        String[] answerIds = getQuestionsOrAnswers(uuid, domainId, CLAZZ_ANSWER);
         for (String id: answerIds) {
             if (!deleteObject(id)) {
                 allDeleted = false;
@@ -337,8 +342,8 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private ResponseEntity<String> trainWeaviateImpl(QnA qna, String domainId) {
         log.info("Weaviate Impl: Index QnA associated with Katie domain ID '" + domainId + "' ...");
 
-        index(domainId, qna.getUuid(), "Question", "question", qna.getQuestion());
-        index(domainId, qna.getUuid(), "Answer", "answer", qna.getAnswer());
+        index(domainId, qna.getUuid(), CLAZZ_QUESTION, FIELD_QUESTION, qna.getQuestion());
+        index(domainId, qna.getUuid(), CLAZZ_ANSWER, FIELD_ANSWER, qna.getAnswer());
 
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
