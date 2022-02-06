@@ -344,7 +344,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     *
+     * @param key Key of field, either "question" or "answer"
      */
     private void index(String domainId, String uuid, String clazzName, String key, String value) {
         log.info("Weaviate Impl: Index '" + key + "' of QnA associated with Katie domain ID '" + domainId + "' ...");
