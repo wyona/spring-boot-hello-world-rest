@@ -112,7 +112,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 .withClassName("Question")
                 .withAsk(askArgument)
                 .withFields(fields)
+                .withLimit(10)
                 .run();
+
+        // TODO: Also search within schema class Answer
 
         java.util.List<String> ids = new ArrayList<String>();
 
