@@ -17,6 +17,7 @@ import org.wyona.webapp.models.katie.Sentence;
 
 import technology.semi.weaviate.client.Config;
 import technology.semi.weaviate.client.WeaviateClient;
+import technology.semi.weaviate.client.v1.data.model.ObjectReference;
 import technology.semi.weaviate.client.v1.data.model.WeaviateObject;
 import technology.semi.weaviate.client.base.Result;
 import technology.semi.weaviate.client.v1.graphql.model.GraphQLResponse;
@@ -145,7 +146,6 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
 
         Float certaintyThreshold = Float.parseFloat("0.5");
-
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
 
         log.info("Search within knowledge base with domain Id: " + domainId);
@@ -156,10 +156,12 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 path(path).
                 build();
 
+        // {Get{Question(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {question qnaId _additional{certainty id answer {result}}},Answer(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {answer qnaId _additional{certainty id answer {result}}}}}
+
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName(CLAZZ_QUESTION)
                 .withAsk(askArgument)
-                //.withWhere(whereArgument)
+                .withWhere(whereArgument)
                 .withFields(fields)
                 .withLimit(10)
                 .run();
@@ -365,9 +367,9 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         java.util.Map<String, Object> properties = new java.util.HashMap<>();
         properties.put("qnaId", uuid);
         properties.put(key, value); // TODO: escape and replace new lines
-        properties.put(FIELD_TENANT, new java.util.HashMap() { {
-            put("beacon", "weaviate://localhost/" + domainId);
-        } });
+        properties.put(FIELD_TENANT, new ObjectReference[] {
+                ObjectReference.builder().beacon("weaviate://localhost/" + domainId).build()
+        });
 
         Result<WeaviateObject> result = client.data().creator()
                 .withClassName(clazzName)
