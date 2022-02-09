@@ -135,7 +135,19 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      *
      */
     private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
-        log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + "TODO" + "' ...");
+        String[] ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION);
+
+        // TODO: Also search within schema class Answer
+        //String[] ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER);
+
+        return new ResponseEntity<>(ids, HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private String[] getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName) {
+        log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + domainId + "' ...");
 
         // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
         Config config = new Config(weaviateProtocol, weaviateHost);
@@ -165,10 +177,8 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         // {Get{Question(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {question qnaId _additional{certainty id answer {result}}},Answer(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {answer qnaId _additional{certainty id answer {result}}}}}
 
-        // TODO: Also search within schema class Answer
-
         Result<GraphQLResponse> result = client.graphQL().get()
-                .withClassName(CLAZZ_QUESTION)
+                .withClassName(clazzName)
                 .withAsk(askArgument)
                 .withWhere(whereArgument)
                 .withFields(fields)
@@ -183,7 +193,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
             log.info("Answers: " + dataNode);
-            JsonNode questionNodes = dataNode.get("Get").get(CLAZZ_QUESTION);
+            JsonNode questionNodes = dataNode.get("Get").get(clazzName);
             if (questionNodes.isArray()) {
                 for (JsonNode qNode: questionNodes) {
                     String qnaId = qNode.get("qnaId").asText();
@@ -198,7 +208,8 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             }
         }
 
-        return new ResponseEntity<>(ids.toArray(new String[0]), HttpStatus.OK);
+        // TODO: Also return cetainties
+        return ids.toArray(new String[0]);
     }
 
     /**
@@ -278,7 +289,6 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         WeaviateClient client = new WeaviateClient(config);
 
         Field idField = Field.builder().name("id").build();
-        //Field certaintyField = Field.builder().name("certainty").build();
         Field[] subFields = new Field[1];
         subFields[0] = idField;
 
