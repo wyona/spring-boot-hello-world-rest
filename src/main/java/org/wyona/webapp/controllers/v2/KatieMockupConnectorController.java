@@ -141,9 +141,16 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         Config config = new Config(weaviateProtocol, weaviateHost);
         WeaviateClient client = new WeaviateClient(config);
 
+        Field idField = Field.builder().name("id").build();
+        Field certaintyField = Field.builder().name("certainty").build();
+        Field[] subFields = new Field[2];
+        subFields[0] = idField;
+        subFields[1] = certaintyField;
+        Field additonalField = Field.builder().name("_additional").fields(subFields).build();
+
         Field questionField = Field.builder().name(FIELD_QUESTION).build();
         Field uuidField = Field.builder().name("qnaId").build();
-        Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField }).build();
+        Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField, additonalField }).build();
 
         Float certaintyThreshold = Float.parseFloat("0.5");
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
@@ -158,6 +165,8 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         // {Get{Question(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {question qnaId _additional{certainty id answer {result}}},Answer(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {answer qnaId _additional{certainty id answer {result}}}}}
 
+        // TODO: Also search within schema class Answer
+
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName(CLAZZ_QUESTION)
                 .withAsk(askArgument)
@@ -165,8 +174,6 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 .withFields(fields)
                 .withLimit(10)
                 .run();
-
-        // TODO: Also search within schema class Answer
 
         java.util.List<String> ids = new ArrayList<String>();
 
@@ -179,7 +186,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             JsonNode questionNodes = dataNode.get("Get").get(CLAZZ_QUESTION);
             if (questionNodes.isArray()) {
                 for (JsonNode qNode: questionNodes) {
-                    ids.add(qNode.get("qnaId").asText());
+                    String qnaId = qNode.get("qnaId").asText();
+                    ids.add(qnaId);
+
+                    JsonNode additionalNode = qNode.get("_additional");
+                    log.info("_additional: " + additionalNode);
+                    String id = additionalNode.get("id").asText();
+                    String certainty = additionalNode.get("certainty").asText();
+                    log.info("Certainty of QnA '" + qnaId + "': " + certainty);
                 }
             }
         }
@@ -264,6 +278,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         WeaviateClient client = new WeaviateClient(config);
 
         Field idField = Field.builder().name("id").build();
+        //Field certaintyField = Field.builder().name("certainty").build();
         Field[] subFields = new Field[1];
         subFields[0] = idField;
 
