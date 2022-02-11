@@ -132,16 +132,19 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      *
      */
     private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
-        List<UuidCertainty> ids = new ArrayList<UuidCertainty>();
+        List<UuidCertainty> idsFromQuestions = new ArrayList<UuidCertainty>();
+        idsFromQuestions = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION, FIELD_QUESTION);
 
-        ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION, FIELD_QUESTION, ids);
+        List<UuidCertainty> idsFromAnswers = new ArrayList<UuidCertainty>();
+        idsFromAnswers = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER, FIELD_ANSWER);
+        for (UuidCertainty idFromAnswer: idsFromAnswers) {
+            mergeWithoutSorting(idsFromQuestions, idFromAnswer);
+        }
 
-        ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER, FIELD_ANSWER, ids);
-
-        Collections.sort(ids, UuidCertainty.CertaintyComparator);
+        Collections.sort(idsFromQuestions, UuidCertainty.CertaintyComparator);
 
         List<String> uuids = new ArrayList<String>();
-        for (UuidCertainty id: ids) {
+        for (UuidCertainty id: idsFromQuestions) {
             uuids.add(id.getUuid());
         }
 
@@ -149,9 +152,40 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
+     * Merge UUID into existing list of UUIDs, but without sorting by certainty
+     * @param uuids Existing list of UUIDs
+     * @param uuid UUID to be merged into existing list
+     * @return merged list of UUIDs
+     */
+    private List<UuidCertainty> mergeWithoutSorting(List<UuidCertainty> uuids, UuidCertainty uuid) {
+        log.info("Merge uuid '" + uuid.getUuid() + " / "+ uuid.getCertainty() + "' with existing list ...");
+
+        List<UuidCertainty> merged = new ArrayList<UuidCertainty>();
+
+        boolean alreadyAdded = false;
+        for (UuidCertainty current: uuids) {
+            if (current.getUuid().equals(uuid.getUuid())) {
+                if (uuid.getCertainty() > current.getCertainty()) {
+                    merged.add(uuid);
+                } else {
+                    merged.add(current);
+                }
+                alreadyAdded = true;
+            } else {
+                merged.add(current);
+            }
+        }
+        if (!alreadyAdded) {
+            merged.add(uuid);
+        }
+
+        return merged;
+    }
+
+    /**
      *
      */
-    private List<UuidCertainty> getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName, String fieldName, List<UuidCertainty> ids) {
+    private List<UuidCertainty> getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName, String fieldName) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + domainId + "' ...");
 
         // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
@@ -191,6 +225,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 .withLimit(10)
                 .run();
 
+        List<UuidCertainty> ids = new ArrayList<UuidCertainty>();
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
