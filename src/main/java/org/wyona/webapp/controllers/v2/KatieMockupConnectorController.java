@@ -264,6 +264,20 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private ResponseEntity<String> deleteTenantWeaviateImpl(String domainId) {
         log.info("Weaviate Impl: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
 
+        // INFO: Delete all referenced Questions and Answers
+        String[] referencedObjects = getReferencedQuestionsAndAnswers(domainId);
+        if (referencedObjects != null) {
+            for (String uuid: referencedObjects) {
+                try {
+                    deleteObject(uuid);
+                } catch(Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        } else {
+            log.info("No referenced Questions or Answers found for domain '" + domainId + "'.");
+        }
+
         if (deleteObject(domainId)) {
             log.info("Tenant '" + domainId + "' has been deleted successfully.");
         } else {
@@ -271,6 +285,86 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Get all UUIDs of referenced Questions and Answers of a particular domain
+     * @return array of UUIDs of referenced Questions and Answers of a particular domain
+     */
+    private String[] getReferencedQuestionsAndAnswers(String domainId) {
+        List<String> uuids = new ArrayList<String>();
+
+        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
+        Config config = new Config(weaviateProtocol, weaviateHost);
+        WeaviateClient client = new WeaviateClient(config);
+
+        Field idField = Field.builder().name("id").build();
+        Field[] subFields = new Field[1];
+        subFields[0] = idField;
+
+        Field additonalField = Field.builder().name("_additional").fields(subFields).build();
+        Fields fields = Fields.builder().fields(new Field[]{ additonalField }).build();
+
+        log.info("Restrict query to knowledge base with domain Id '" + domainId + "'.");
+        String[] path = {FIELD_TENANT, CLAZZ_TENANT, "id"};
+        WhereArgument whereArgument = WhereArgument.builder().
+                operator(WhereOperator.Equal).
+                valueString(domainId).
+                path(path).
+                build();
+
+
+        log.info("Get all objects with class '" + CLAZZ_QUESTION + "' or '" + CLAZZ_ANSWER + "' linked with domain Id '" + domainId + "' ...");
+
+        Result<GraphQLResponse> result = client.graphQL().get()
+                .withClassName(CLAZZ_QUESTION)
+                .withWhere(whereArgument)
+                .withFields(fields)
+                .run();
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
+            log.info("Objects: " + dataNode);
+
+            JsonNode questionNodes = dataNode.get("Get").get(CLAZZ_QUESTION);
+            if (questionNodes.isArray()) {
+                for (JsonNode question: questionNodes) {
+                    JsonNode additionalNode = question.get("_additional");
+                    log.info("_additional: " + additionalNode);
+                    String id = additionalNode.get("id").asText();
+                    uuids.add(id);
+                }
+            }
+        }
+
+        result = client.graphQL().get()
+                .withClassName(CLAZZ_ANSWER)
+                .withWhere(whereArgument)
+                .withFields(fields)
+                .run();
+
+        if (result.hasErrors()) {
+            log.error("" + result.getError().getMessages());
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
+            log.info("Objects: " + dataNode);
+
+            JsonNode answersNodes = dataNode.get("Get").get(CLAZZ_ANSWER);
+            if (answersNodes.isArray()) {
+                for (JsonNode answer: answersNodes) {
+                    JsonNode additionalNode = answer.get("_additional");
+                    log.info("_additional: " + additionalNode);
+                    String id = additionalNode.get("id").asText();
+                    uuids.add(id);
+                }
+            }
+        }
+
+        return uuids.toArray(new String[0]);
     }
 
     /**
