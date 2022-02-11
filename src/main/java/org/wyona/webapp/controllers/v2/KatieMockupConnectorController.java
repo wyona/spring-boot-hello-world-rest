@@ -145,6 +145,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         List<String> uuids = new ArrayList<String>();
         for (UuidCertainty id: idsFromQuestions) {
+            log.info("QnA: " + id.getUuid() + " / " + id.getCertainty());
             uuids.add(id.getUuid());
         }
 
