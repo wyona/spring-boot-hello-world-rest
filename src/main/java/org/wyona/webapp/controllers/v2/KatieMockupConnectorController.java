@@ -28,10 +28,7 @@ import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 'Katie Mockup Connector' Controller
@@ -135,18 +132,26 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      *
      */
     private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
-        String[] ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION);
+        List<UuidCertainty> ids = new ArrayList<UuidCertainty>();
 
-        // TODO: Also search within schema class Answer
-        //String[] ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER);
+        ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION, FIELD_QUESTION, ids);
 
-        return new ResponseEntity<>(ids, HttpStatus.OK);
+        ids = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER, FIELD_ANSWER, ids);
+
+        Collections.sort(ids, UuidCertainty.CertaintyComparator);
+
+        List<String> uuids = new ArrayList<String>();
+        for (UuidCertainty id: ids) {
+            uuids.add(id.getUuid());
+        }
+
+        return new ResponseEntity<>(uuids.toArray(new String[0]), HttpStatus.OK);
     }
 
     /**
      *
      */
-    private String[] getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName) {
+    private List<UuidCertainty> getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName, String fieldName, List<UuidCertainty> ids) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + domainId + "' ...");
 
         // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
@@ -160,14 +165,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         subFields[1] = certaintyField;
         Field additonalField = Field.builder().name("_additional").fields(subFields).build();
 
-        Field questionField = Field.builder().name(FIELD_QUESTION).build();
+        Field questionField = Field.builder().name(fieldName).build();
         Field uuidField = Field.builder().name("qnaId").build();
         Fields fields = Fields.builder().fields(new Field[]{ questionField, uuidField, additonalField }).build();
 
         Float certaintyThreshold = Float.parseFloat("0.5");
         AskArgument askArgument = AskArgument.builder().question(question.getText()).certainty(certaintyThreshold).build();
 
-        log.info("Search within knowledge base with domain Id: " + domainId);
+        log.info("Restrict search to knowledge base with domain Id '" + domainId + "'.");
         String[] path = {FIELD_TENANT, CLAZZ_TENANT, "id"};
         WhereArgument whereArgument = WhereArgument.builder().
                 operator(WhereOperator.Equal).
@@ -177,6 +182,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         // {Get{Question(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {question qnaId _additional{certainty id answer {result}}},Answer(ask: {question:\"for dinner\",certainty: 0.5}, where: {operator:Equal, valueString:\"e4ff3246-372b-4042-a9e2-d30f612d1244\", path: [\"tenant\", \"Tenant\", \"id\"]}, limit: 10) {answer qnaId _additional{certainty id answer {result}}}}}
 
+        log.info("Search within class '" + clazzName + "' ...");
         Result<GraphQLResponse> result = client.graphQL().get()
                 .withClassName(clazzName)
                 .withAsk(askArgument)
@@ -185,31 +191,35 @@ public class KatieMockupConnectorController implements KatieConnectorController 
                 .withLimit(10)
                 .run();
 
-        java.util.List<String> ids = new ArrayList<String>();
-
         if (result.hasErrors()) {
             log.error("" + result.getError().getMessages());
         } else {
+            Object dataObject = result.getResult().getData();
+            log.info("Data object: " +  dataObject);
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode dataNode = mapper.valueToTree(result.getResult().getData());
-            log.info("Answers: " + dataNode);
-            JsonNode questionNodes = dataNode.get("Get").get(clazzName);
-            if (questionNodes.isArray()) {
-                for (JsonNode qNode: questionNodes) {
-                    String qnaId = qNode.get("qnaId").asText();
-                    ids.add(qnaId);
+            JsonNode dataNode = mapper.valueToTree(dataObject);
+            log.info("Received data: " + dataNode);
+            if (dataNode != null) {
+                JsonNode questionNodes = dataNode.get("Get").get(clazzName);
+                if (questionNodes.isArray()) {
+                    for (JsonNode qNode : questionNodes) {
+                        String qnaId = qNode.get("qnaId").asText();
 
-                    JsonNode additionalNode = qNode.get("_additional");
-                    log.info("_additional: " + additionalNode);
-                    String id = additionalNode.get("id").asText();
-                    String certainty = additionalNode.get("certainty").asText();
-                    log.info("Certainty of QnA '" + qnaId + "': " + certainty);
+                        JsonNode additionalNode = qNode.get("_additional");
+                        log.info("_additional: " + additionalNode);
+                        String id = additionalNode.get("id").asText();
+                        double certainty = additionalNode.get("certainty").asDouble();
+                        log.info("Certainty of QnA '" + qnaId + "': " + certainty);
+
+                        ids.add(new UuidCertainty(qnaId, certainty));
+                    }
                 }
+            } else {
+                log.warn("No data received.");
             }
         }
 
-        // TODO: Also return cetainties
-        return ids.toArray(new String[0]);
+        return ids;
     }
 
     /**
@@ -408,4 +418,54 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             log.info("Index value result: " + result.getResult());
         }
     }
+}
+
+/**
+ *
+ */
+class UuidCertainty {
+
+    private String uuid;
+    private double certainty;
+
+    /**
+     *
+     */
+    public UuidCertainty(String uuid, double certainty) {
+        this.uuid = uuid;
+        this.certainty = certainty;
+    }
+
+    /**
+     *
+     */
+    public String getUuid() {
+        return uuid;
+    }
+
+    /**
+     *
+     */
+    public double getCertainty() {
+        return certainty;
+    }
+
+    /**
+     *
+     */
+    public static Comparator<UuidCertainty> CertaintyComparator = new Comparator<UuidCertainty>() {
+
+        @Override
+        public int compare(UuidCertainty u1, UuidCertainty u2) {
+            double c1 = u1.getCertainty();
+            double c2 = u2.getCertainty();
+            if (c1 > c2) {
+                return -1;
+            } else if (c1 == c2) {
+                return 0;
+            } else {
+                return 1;
+            }
+        }
+    };
 }
