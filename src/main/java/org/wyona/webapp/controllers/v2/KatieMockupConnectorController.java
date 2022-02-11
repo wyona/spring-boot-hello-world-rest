@@ -138,7 +138,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
         List<UuidCertainty> idsFromAnswers = new ArrayList<UuidCertainty>();
         idsFromAnswers = getObjectsWeaviateImpl(question, domainId, CLAZZ_ANSWER, FIELD_ANSWER);
         for (UuidCertainty idFromAnswer: idsFromAnswers) {
-            mergeWithoutSorting(idsFromQuestions, idFromAnswer);
+            idsFromQuestions = mergeWithoutSorting(idsFromQuestions, idFromAnswer);
         }
 
         Collections.sort(idsFromQuestions, UuidCertainty.CertaintyComparator);
