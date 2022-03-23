@@ -28,6 +28,7 @@ import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
 import technology.semi.weaviate.client.v1.misc.model.Meta;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -100,11 +101,17 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @PostMapping("/ask/{domain-id}")
     @ApiOperation(value = "Ask question")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<String[]> getAnswers(
             @RequestBody Sentence question,
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
-            @PathVariable(name = "domain-id", required = true) String domainId
+            @PathVariable(name = "domain-id", required = true) String domainId,
+            HttpServletRequest request
     ) {
+        String jwtToken = getJWT(request);
+        log.info("TODO: Verify bearer token: " + jwtToken);
         return getAnswersWeaviateImpl(question, domainId);
 
         //log.info("TODO: Get answers to question '" + question.getText() + "' ...");
@@ -546,6 +553,24 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             log.error("" + result.getError().getMessages());
         } else {
             log.info("Index value result: " + result.getResult());
+        }
+    }
+
+    /**
+     * Get JWT from Authorization request header
+     */
+    private String getJWT(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null) {
+            if (authorizationHeader.indexOf("Bearer") >= 0) {
+                return authorizationHeader.substring("Bearer".length()).trim();
+            } else {
+                log.warn("Authorization header does not contain prefix 'Bearer'.");
+                return null;
+            }
+        } else {
+            log.warn("No Authorization header.");
+            return null;
         }
     }
 }

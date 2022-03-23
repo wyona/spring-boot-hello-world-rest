@@ -6,6 +6,8 @@ import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
 import org.wyona.webapp.models.katie.Sentence;
 
+import javax.servlet.http.HttpServletRequest;
+
 public interface KatieConnectorController {
 
     /**
@@ -33,7 +35,7 @@ public interface KatieConnectorController {
      * @param domainId Domain Id of knowledge base
      * @return UUIDs of answers to question
      */
-    public ResponseEntity<String[]> getAnswers(Sentence question, String domainId);
+    public ResponseEntity<String[]> getAnswers(Sentence question, String domainId, HttpServletRequest request);
 
     /**
      * Delete a particular QnA
