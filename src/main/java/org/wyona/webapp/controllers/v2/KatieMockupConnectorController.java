@@ -54,11 +54,11 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private static final String FIELD_TENANT = "tenant";
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain, HttpServletRequest)
      */
     @PostMapping("/tenant")
     @ApiOperation(value = "Create tenant")
-    public ResponseEntity<String> createTenant(@RequestBody Domain domain) {
+    public ResponseEntity<String> createTenant(@RequestBody Domain domain, HttpServletRequest request) {
         return createTenantWeaviateImpl(domain);
 
         //log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
@@ -66,13 +66,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteTenant(String)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteTenant(String, HttpServletRequest)
      */
     @DeleteMapping("/tenant/{domain-id}")
     @ApiOperation(value = "Delete tenant")
     public ResponseEntity<?> deleteTenant(
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
-            @PathVariable(name = "domain-id", required = true) String domainId
+            @PathVariable(name = "domain-id", required = true) String domainId,
+            HttpServletRequest request
     ){
         return deleteTenantWeaviateImpl(domainId);
 
@@ -81,14 +82,15 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA, String)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA, String, HttpServletRequest)
      */
     @PostMapping("/qna/{domain-id}")
     @ApiOperation(value = "Add QnA")
     public ResponseEntity<String> train(
             @RequestBody QnA qna,
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
-            @PathVariable(name = "domain-id", required = true) String domainId
+            @PathVariable(name = "domain-id", required = true) String domainId,
+            HttpServletRequest request
     ) {
         return trainWeaviateImpl(qna, domainId);
 
@@ -97,7 +99,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence, String)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence, String, HttpServletRequest)
      */
     @PostMapping("/ask/{domain-id}")
     @ApiOperation(value = "Ask question")
@@ -110,8 +112,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ) {
-        String jwtToken = getJWT(request);
-        log.info("TODO: Verify bearer token: " + jwtToken);
+        if (!isAuthorized(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return getAnswersWeaviateImpl(question, domainId);
 
         //log.info("TODO: Get answers to question '" + question.getText() + "' ...");
@@ -119,7 +123,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteQnA(String, String)
+     * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteQnA(String, String, HttpServletRequest)
      */
     @DeleteMapping("/qna/{domain-id}/{uuid}")
     @ApiOperation(value = "Delete QnA")
@@ -127,12 +131,22 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             @ApiParam(name = "uuid", value = "UUID of QnA", required = true)
-            @PathVariable(name = "uuid", required = true) String uuid
+            @PathVariable(name = "uuid", required = true) String uuid,
+            HttpServletRequest request
     ) {
         return deleteQnAWeaviateImpl(domainId, uuid);
 
         //log.info("TODO: Delete QnA '" + uuid + "' ...");
         //return new ResponseEntity<>("{}", HttpStatus.OK);
+    }
+
+    /**
+     *
+     */
+    private boolean isAuthorized(HttpServletRequest request) {
+        String jwtToken = getJWT(request);
+        log.info("TODO: Verify bearer token: " + jwtToken);
+        return false;
     }
 
     /**

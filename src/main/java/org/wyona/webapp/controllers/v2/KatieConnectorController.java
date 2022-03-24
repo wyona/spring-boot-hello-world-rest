@@ -14,20 +14,20 @@ public interface KatieConnectorController {
      * Create tenant
      * @param domain Domain object containing domain Id and name
      */
-    public ResponseEntity<String> createTenant(@RequestBody Domain domain);
+    public ResponseEntity<String> createTenant(@RequestBody Domain domain, HttpServletRequest request);
 
     /**
      * Delete tenant
      * @param domainId Domain Id
      */
-    public ResponseEntity<?> deleteTenant(String domainId);
+    public ResponseEntity<?> deleteTenant(String domainId, HttpServletRequest request);
 
     /**
      * Add/train a particular question/answer associated with a particular domain
      * @param qna Question and answer
      * @param domainId Domain Id QnA is associated with
      */
-    public ResponseEntity<?> train(QnA qna, String domainId);
+    public ResponseEntity<?> train(QnA qna, String domainId, HttpServletRequest request);
 
     /**
      * Get UUIDs of answers to question
@@ -42,5 +42,5 @@ public interface KatieConnectorController {
      * @param domainId Domain Id the QnA is associated with
      * @param uuid UUID of QnA
      */
-    public ResponseEntity<?> deleteQnA(String domainId, String uuid);
+    public ResponseEntity<?> deleteQnA(String domainId, String uuid, HttpServletRequest request);
 }
