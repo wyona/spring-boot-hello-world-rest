@@ -58,6 +58,9 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @PostMapping("/tenant")
     @ApiOperation(value = "Create tenant")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<String> createTenant(@RequestBody Domain domain, HttpServletRequest request) {
         return createTenantWeaviateImpl(domain);
 
@@ -70,11 +73,18 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @DeleteMapping("/tenant/{domain-id}")
     @ApiOperation(value = "Delete tenant")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<?> deleteTenant(
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ){
+        if (!isAuthorized(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return deleteTenantWeaviateImpl(domainId);
 
         //log.info("TODO: Delete tenant associated with Katie domain ID '" + domainId + "' ...");
@@ -86,12 +96,19 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @PostMapping("/qna/{domain-id}")
     @ApiOperation(value = "Add QnA")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<String> train(
             @RequestBody QnA qna,
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ) {
+        if (!isAuthorized(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return trainWeaviateImpl(qna, domainId);
 
         //log.info("TODO: Train QnA ...");
@@ -127,6 +144,9 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     @DeleteMapping("/qna/{domain-id}/{uuid}")
     @ApiOperation(value = "Delete QnA")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
+                    required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<?> deleteQnA(
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
@@ -134,6 +154,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             @PathVariable(name = "uuid", required = true) String uuid,
             HttpServletRequest request
     ) {
+        if (!isAuthorized(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return deleteQnAWeaviateImpl(domainId, uuid);
 
         //log.info("TODO: Delete QnA '" + uuid + "' ...");
@@ -146,7 +170,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private boolean isAuthorized(HttpServletRequest request) {
         String jwtToken = getJWT(request);
         log.info("TODO: Verify bearer token: " + jwtToken);
-        return false;
+        return true;
     }
 
     /**
