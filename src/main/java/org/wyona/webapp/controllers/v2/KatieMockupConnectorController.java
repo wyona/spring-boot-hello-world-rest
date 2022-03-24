@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,12 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
     @Value("${weaviate.protocol}")
     private String weaviateProtocol;
+
+    @Value("${weaviate.basic.auth.username}")
+    private String basicAuthUsername;
+
+    @Value("${weaviate.basic.auth.password}")
+    private String basicAuthPassword;
 
     @Autowired
     JwtService jwtService;
@@ -245,13 +252,29 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
+     * https://weaviate.io/developers/weaviate/current/client-libraries/java.html#authentication
+     */
+    private Map<String, String> getHeaders() {
+        Map<String, String> headers = new HashMap<String, String>() { {
+            if (basicAuthUsername != null && basicAuthUsername.length() > 0) {
+                log.info("Use Basic Auth ...");
+                String auth = basicAuthUsername + ":" + basicAuthPassword;
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes());
+                String authHeader = "Basic " + new String(encodedAuth);
+                put("Authorization", authHeader);
+            }
+        } };
+
+        return headers;
+    }
+
+    /**
      *
      */
     private List<UuidCertainty> getObjectsWeaviateImpl(Sentence question, String domainId, String clazzName, String fieldName) {
         log.info("Weaviate Impl: Get answers to question '" + question.getText() + "' associated with Katie domain ID '" + domainId + "' ...");
 
-        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         Field idField = Field.builder().name("id").build();
@@ -355,8 +378,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private String[] getReferencedQuestionsAndAnswers(String domainId) {
         List<String> uuids = new ArrayList<String>();
 
-        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         Field idField = Field.builder().name("id").build();
@@ -461,7 +483,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @return true when object was deleted and false otherwise
      */
     private boolean deleteObject(String id) {
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         Result<Boolean> result = client.data().deleter()
@@ -485,8 +507,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     private String[] getQuestionsOrAnswers(String qnaUuid, String domainId, String clazzName) {
         List<String> ids = new ArrayList<String>();
 
-        // TODO: Authentication: https://www.semi.technology/developers/weaviate/current/client-libraries/java.html#authentication
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         Field idField = Field.builder().name("id").build();
@@ -538,7 +559,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     private ResponseEntity<String> createTenantWeaviateImpl(Domain domain) {
         log.info("Weaviate Impl: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         java.util.Map<String, Object> properties = new java.util.HashMap<>();
@@ -587,7 +608,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      */
     private void index(String domainId, String uuid, String clazzName, String key, String value) {
         log.info("Weaviate Impl: Index '" + key + "' of QnA associated with Katie domain ID '" + domainId + "' ...");
-        Config config = new Config(weaviateProtocol, weaviateHost);
+        Config config = new Config(weaviateProtocol, weaviateHost, getHeaders());
         WeaviateClient client = new WeaviateClient(config);
 
         java.util.Map<String, Object> properties = new java.util.HashMap<>();
