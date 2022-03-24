@@ -5,15 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
 import org.wyona.webapp.models.katie.Sentence;
+import org.wyona.webapp.services.JwtService;
 
 import technology.semi.weaviate.client.Config;
 import technology.semi.weaviate.client.WeaviateClient;
@@ -46,6 +49,9 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @Value("${weaviate.protocol}")
     private String weaviateProtocol;
 
+    @Autowired
+    JwtService jwtService;
+
     private static final String CLAZZ_QUESTION = "Question";
     private static final String FIELD_QUESTION = "question";
     private static final String CLAZZ_ANSWER = "Answer";
@@ -62,6 +68,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataType = "string", paramType = "header") })
     public ResponseEntity<String> createTenant(@RequestBody Domain domain, HttpServletRequest request) {
+        if (!isAuthorized(request)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return createTenantWeaviateImpl(domain);
 
         //log.info("TODO: Create tenant associated with Katie domain ID '" + domain.getId() + "' ...");
@@ -165,12 +175,18 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     }
 
     /**
-     *
+     * Check authorization of request
+     * @return true when authorized and false otherwise
      */
     private boolean isAuthorized(HttpServletRequest request) {
         String jwtToken = getJWT(request);
-        log.info("TODO: Verify bearer token: " + jwtToken);
-        return true;
+        log.info("Issuer: " + jwtService.getPayloadValue(jwtToken, "iss"));
+        // TODO: Retrieve public key from https://ukatie.com/swagger-ui/#/authentication-controller/getJWTPublicKeyUsingGET
+        if (jwtService.isJWTValid(jwtToken, null)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
