@@ -1,8 +1,14 @@
-FROM tomcat:8.5-alpine
+FROM openjdk:11.0.11-jdk
 MAINTAINER spring-boot-hello-world.wyona.org
 VOLUME /tmp
-RUN rm -rf /usr/local/tomcat/webapps/ROOT
-COPY target/hello-world-webapp-1.0.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
+COPY target/hello-world-webapp-*.war app.war
+ENTRYPOINT ["java","-jar","/app.war"]
+
+#FROM tomcat:8.5-alpine
+#MAINTAINER spring-boot-hello-world.wyona.org
+#VOLUME /tmp
+#RUN rm -rf /usr/local/tomcat/webapps/ROOT
+#COPY target/hello-world-webapp-1.0.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
 #FROM frolvlad/alpine-oraclejdk8:slim
 #MAINTAINER spring-boot-hello-world.wyona.org
