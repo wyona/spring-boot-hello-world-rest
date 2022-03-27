@@ -1,0 +1,17 @@
+version: "3.3"
+services:
+  katie-weaviate-connector:
+    image: michaelwechner/wyona:katie-weaviate-connector-0.2.0
+    #image: ${DOCKER_IMAGE_TAG}
+    container_name: katie-weaviate-connector
+    restart: always
+    #volumes:
+    #  - /home/wyona/sentence-bert/data:/data
+    environment:
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
+      - WEAVIATE_HOST=weaviate.ukatie.com
+      - WEAVIATE_PROTOCOL=https
+      - WEAVIATE_BASIC_AUTH_USERNAME=TODO_REPLACE
+      - WEAVIATE_BASIC_AUTH_PASSWORD=TODO_REPLACE
+    ports:
+      - 8383:8383
