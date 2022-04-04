@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.wyona.webapp.models.katie.Answer;
 import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
 import org.wyona.webapp.models.katie.Sentence;
@@ -140,7 +141,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
                     required = false, dataType = "string", paramType = "header") })
-    public ResponseEntity<String[]> getAnswers(
+    public ResponseEntity<Answer[]> getAnswers(
             @RequestBody Sentence question,
             @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
@@ -199,7 +200,7 @@ public class KatieMockupConnectorController implements KatieConnectorController 
     /**
      *
      */
-    private ResponseEntity<String[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
+    private ResponseEntity<Answer[]> getAnswersWeaviateImpl(Sentence question, String domainId) {
         List<UuidCertainty> idsFromQuestions = new ArrayList<UuidCertainty>();
         idsFromQuestions = getObjectsWeaviateImpl(question, domainId, CLAZZ_QUESTION, FIELD_QUESTION);
 
@@ -211,13 +212,15 @@ public class KatieMockupConnectorController implements KatieConnectorController 
 
         Collections.sort(idsFromQuestions, UuidCertainty.CertaintyComparator);
 
-        List<String> uuids = new ArrayList<String>();
+        List<Answer> answers = new ArrayList<Answer>();
         for (UuidCertainty id: idsFromQuestions) {
             log.info("QnA: " + id.getUuid() + " / " + id.getCertainty());
-            uuids.add(id.getUuid());
+            Answer answer = new Answer();
+            answer.setUuid(id.getUuid());
+            answers.add(answer);
         }
 
-        return new ResponseEntity<>(uuids.toArray(new String[0]), HttpStatus.OK);
+        return new ResponseEntity<>(answers.toArray(new Answer[0]), HttpStatus.OK);
     }
 
     /**

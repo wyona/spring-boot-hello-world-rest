@@ -2,6 +2,8 @@ package org.wyona.webapp.controllers.v2;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import org.wyona.webapp.models.katie.Answer;
 import org.wyona.webapp.models.katie.Domain;
 import org.wyona.webapp.models.katie.QnA;
 import org.wyona.webapp.models.katie.Sentence;
@@ -35,7 +37,7 @@ public interface KatieConnectorController {
      * @param domainId Domain Id of knowledge base
      * @return UUIDs of answers to question
      */
-    public ResponseEntity<String[]> getAnswers(Sentence question, String domainId, HttpServletRequest request);
+    public ResponseEntity<Answer[]> getAnswers(Sentence question, String domainId, HttpServletRequest request);
 
     /**
      * Delete a particular QnA
