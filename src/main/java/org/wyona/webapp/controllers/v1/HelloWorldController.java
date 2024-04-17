@@ -71,10 +71,11 @@ public class HelloWorldController {
     // If @RequestBody was used, Swagger would handle the conversion of JSON into Email object correctly and provide the mime type.
     // Swagger only provides a mime type for the entire message, but not for each part. For parts, the data is not given a type and
     // Spring defaults to application/octet-stream and does know how to convert it.
-    public ResponseEntity<Email> sendEmail(@Parameter(name = "emailAddress", description = "e-mail to be sent to", required = true) @RequestPart String emailAddress,
-                                           @Parameter(name = "emailSubject", description = "e-mail subject") @RequestPart(required = false) String emailSubject,
-                                           @Parameter(name = "emailText", description = "e-mail text") @RequestPart(required = false)  String emailText,
-                                           @Parameter(name = "emailAttachment", description = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
+    public ResponseEntity<Email> sendEmail(
+            @Parameter(name = "emailAddress", description = "e-mail to be sent to", required = true) @RequestParam(name = "emailAddress", required = true) String emailAddress,
+            @Parameter(name = "emailSubject", description = "e-mail subject") @RequestParam(name = "emailSubject", required = false) String emailSubject,
+            @Parameter(name = "emailText", description = "e-mail text") @RequestParam(name = "emailText", required = false)  String emailText,
+            @Parameter(name = "emailAttachment", description = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
 
         // TODO: Check whether format of emailText is HTML
         Email email = new Email(emailAddress, emailSubject, emailText, false).attachment(emailAttachment);
