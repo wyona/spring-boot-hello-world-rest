@@ -1,7 +1,9 @@
 package org.wyona.webapp.controllers.v1;
 
-import io.swagger.annotations.*;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,8 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.multipart.MultipartFile;
 import org.wyona.webapp.interfaces.EmailValidation;
 import org.wyona.webapp.models.Email;
-import org.wyona.webapp.models.Greeting;
-import org.wyona.webapp.models.LanguageEmail;
 import org.wyona.webapp.services.MailerService;
 
 import javax.mail.MessagingException;
@@ -49,15 +49,15 @@ public class ContactFormController {
      * Send contact information by email
      */
     @PostMapping(value = "/contact", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Send contact information (and optional attachment) to configured email address")
+    @Operation(description = "Send contact information (and optional attachment) to configured email address")
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
+            @ApiResponse(responseCode = "400", description = "Bad Request, e.g. provided email parameter is not valid email address")
     })
-    public ResponseEntity<Email> sendEmail(@ApiParam(name = "emailAddress", value = "e-mail address of person sending contact information", required = true) @RequestPart String emailAddress,
-                                           @ApiParam(name = "name", value = "name of person sending contact information") @RequestPart(required = false) String name,
-                                           @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
-                                           @ApiParam(name = "emailText", value = "e-mail message") @RequestPart(required = false)  String emailText,
-                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
+    public ResponseEntity<Email> sendEmail(@Parameter(name = "emailAddress", description = "e-mail address of person sending contact information", required = true) @RequestPart String emailAddress,
+                                           @Parameter(name = "name", description = "name of person sending contact information") @RequestPart(required = false) String name,
+                                           @Parameter(name = "emailSubject", description = "e-mail subject") @RequestPart(required = false) String emailSubject,
+                                           @Parameter(name = "emailText", description = "e-mail message") @RequestPart(required = false)  String emailText,
+                                           @Parameter(name = "emailAttachment", description = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException {
         Email email = new Email(contactEmail, emailSubject, "Contact request from: " + emailAddress + ", " + name + "\n\nMessage: \n\n" + emailText, false).attachment(emailAttachment);
 
         email.setSubject(emailValidation.getDefaultSubjectIfSubjectEmpty(email.getSubject()));

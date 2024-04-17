@@ -2,9 +2,12 @@ package org.wyona.webapp.controllers.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.*;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +34,7 @@ import technology.semi.weaviate.client.v1.graphql.query.argument.WhereArgument;
 import technology.semi.weaviate.client.v1.graphql.query.argument.WhereOperator;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Field;
 import technology.semi.weaviate.client.v1.graphql.query.fields.Fields;
-import technology.semi.weaviate.client.v1.misc.model.Meta;
+//import technology.semi.weaviate.client.v1.misc.model.Meta;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -71,10 +74,10 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#createTenant(Domain, HttpServletRequest)
      */
     @PostMapping("/tenant")
-    @ApiOperation(value = "Create tenant")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+    @Operation(summary = "Create tenant")
+    @Parameters({
+            @Parameter(name = "Authorization", description = "Bearer JWT",
+                    required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<String> createTenant(@RequestBody Domain domain, HttpServletRequest request) {
         if (!isAuthorized(request)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -90,12 +93,12 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteTenant(String, HttpServletRequest)
      */
     @DeleteMapping("/tenant/{domain-id}")
-    @ApiOperation(value = "Delete tenant")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+    @Operation(summary = "Delete tenant")
+    @Parameters({
+            @Parameter(name = "Authorization", description = "Bearer JWT",
+                    required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<?> deleteTenant(
-            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @Parameter(name = "domain-id", description = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ){
@@ -113,13 +116,13 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#train(QnA, String, HttpServletRequest)
      */
     @PostMapping("/qna/{domain-id}")
-    @ApiOperation(value = "Add QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+    @Operation(description = "Add QnA")
+    @Parameters({
+            @Parameter(name = "Authorization", description = "Bearer JWT",
+                    required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<String> train(
             @RequestBody QnA qna,
-            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @Parameter(name = "domain-id", description = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ) {
@@ -137,13 +140,13 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#getAnswers(Sentence, String, HttpServletRequest)
      */
     @PostMapping("/ask/{domain-id}")
-    @ApiOperation(value = "Ask question")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+    @Operation(description = "Ask question")
+    @Parameters({
+            @Parameter(name = "Authorization", description = "Bearer JWT",
+                    required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<Answer[]> getAnswers(
             @RequestBody Sentence question,
-            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @Parameter(name = "domain-id", description = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
             HttpServletRequest request
     ) {
@@ -161,14 +164,14 @@ public class KatieMockupConnectorController implements KatieConnectorController 
      * @see org.wyona.webapp.controllers.v2.KatieConnectorController#deleteQnA(String, String, HttpServletRequest)
      */
     @DeleteMapping("/qna/{domain-id}/{uuid}")
-    @ApiOperation(value = "Delete QnA")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "Authorization", value = "Bearer JWT",
-                    required = false, dataType = "string", paramType = "header") })
+    @Operation(description = "Delete QnA")
+    @Parameters({
+            @Parameter(name = "Authorization", description = "Bearer JWT",
+                    required = false, schema = @Schema(implementation = String.class), in = ParameterIn.HEADER) })
     public ResponseEntity<?> deleteQnA(
-            @ApiParam(name = "domain-id", value = "Katie domain ID", required = true)
+            @Parameter(name = "domain-id", description = "Katie domain ID", required = true)
             @PathVariable(name = "domain-id", required = true) String domainId,
-            @ApiParam(name = "uuid", value = "UUID of QnA", required = true)
+            @Parameter(name = "uuid", description = "UUID of QnA", required = true)
             @PathVariable(name = "uuid", required = true) String uuid,
             HttpServletRequest request
     ) {

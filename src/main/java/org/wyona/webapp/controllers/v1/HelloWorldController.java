@@ -1,9 +1,12 @@
 package org.wyona.webapp.controllers.v1;
 
-import io.swagger.annotations.*;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,12 +44,12 @@ public class HelloWorldController {
      * Send greetings by email
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-    @ApiOperation(value="Generate greeting and send greeting as email when address specified")
+    @Operation(description="Generate greeting and send greeting as email when address specified")
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
+            @ApiResponse(responseCode = "400", description = "Bad Request, e.g. provided email parameter is not valid email address")
     })
     public ResponseEntity<Greeting> getGreeting(
-        @ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'") @RequestParam(name = "email", required = false) String email
+        @Parameter(name = "email", description = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'") @RequestParam(name = "email", required = false) String email
         // TODO: Use @javax.validation.constraints.Email to validate email address 
         //@ApiParam(name = "email", value = "email address greeting will be sent to, e.g. 'michael.wechner@wyona.com'", required = false) @javax.validation.constraints.Email(message = "Email should be valid") @RequestParam(name = "email", required = false) String email
         ) throws MessagingException {
@@ -60,18 +63,18 @@ public class HelloWorldController {
      * @throws InterruptedException 
      */
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    @ApiOperation(value = "Send an email with provided text and subject (and optional attachment) to email address which is specified")
+    @Operation(description = "Send an email with provided text and subject (and optional attachment) to email address which is specified")
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request, e.g. provided email parameter is not valid email address")
+            @ApiResponse(responseCode = "400", description = "Bad Request, e.g. provided email parameter is not valid email address")
     })
     // Decomposing Email object into separate parts, as Swagger has an issue with multipart requests.
     // If @RequestBody was used, Swagger would handle the conversion of JSON into Email object correctly and provide the mime type.
     // Swagger only provides a mime type for the entire message, but not for each part. For parts, the data is not given a type and
     // Spring defaults to application/octet-stream and does know how to convert it.
-    public ResponseEntity<Email> sendEmail(@ApiParam(name = "emailAddress", value = "e-mail to be sent to", required = true) @RequestPart String emailAddress,
-                                           @ApiParam(name = "emailSubject", value = "e-mail subject") @RequestPart(required = false) String emailSubject,
-                                           @ApiParam(name = "emailText", value = "e-mail text") @RequestPart(required = false)  String emailText,
-                                           @ApiParam(name = "emailAttachment", value = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
+    public ResponseEntity<Email> sendEmail(@Parameter(name = "emailAddress", description = "e-mail to be sent to", required = true) @RequestPart String emailAddress,
+                                           @Parameter(name = "emailSubject", description = "e-mail subject") @RequestPart(required = false) String emailSubject,
+                                           @Parameter(name = "emailText", description = "e-mail text") @RequestPart(required = false)  String emailText,
+                                           @Parameter(name = "emailAttachment", description = "e-mail attachment") @RequestPart(name = "emailAttachment", required = false) MultipartFile emailAttachment) throws MessagingException, InterruptedException {
 
         // TODO: Check whether format of emailText is HTML
         Email email = new Email(emailAddress, emailSubject, emailText, false).attachment(emailAttachment);
@@ -91,14 +94,14 @@ public class HelloWorldController {
      * @throws InterruptedException 
      */
     @PostMapping("/send/lang")
-    @ApiOperation(value = "Send a language specific greeting to a provided email address")
+    @Operation(description = "Send a language specific greeting to a provided email address")
     @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Bad Request"),
-            @ApiResponse(code = 200, response = String.class, message = "Email sent")
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = String.class)), description = "Email sent")
     })
     ResponseEntity<String> sendEmailWithSpecificLanguage(@Valid @RequestBody LanguageEmail request,
             @RequestHeader(value = "Accept-Language", defaultValue = "de") String lang,
-            @ApiParam(name = "name", value = "Name of person to be greeted, e.g. 'Michael'") @RequestParam(name = "name", required = true) String name
+            @Parameter(name = "name", description = "Name of person to be greeted, e.g. 'Michael'") @RequestParam(name = "name", required = true) String name
             ) throws MessagingException, InterruptedException{
         String greetingText = greetingService.getGreetingText(lang, name);
         mailerService.sendEmail(request.getEmail(), "Greeting in " + lang, greetingText, true);
