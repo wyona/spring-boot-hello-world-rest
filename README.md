@@ -55,7 +55,7 @@ IntelliJ IDEA
 * File -> New -> Project from Version Control -> Git
 ** https://github.com/wyona/spring-boot-hello-world-rest
 *** https://github.com/wyona/spring-boot-hello-world-rest.git
-* Set JDK (see Version above)
+* Set JDK: File -> Project Structure -> Project SDK: 11
 * Reimport All Maven Projects
 * Run clean/install
 * Startup Server
