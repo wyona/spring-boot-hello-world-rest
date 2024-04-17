@@ -17,10 +17,10 @@ Configuration
 -------------
 
 * Configure mail server inside src/main/resources/application.properties, for example
- * app.mail.host=mail.wyona.com
- * app.mail.port=587
- * app.mail.username=USERNAME
- * app.mail.password=PASSWORD
+  * app.mail.host=mail.wyona.com
+  * app.mail.port=587
+  * app.mail.username=USERNAME
+  * app.mail.password=PASSWORD
 
 Build and deploy inside Tomcat
 ------------------------------
